@@ -110,6 +110,7 @@ export const es: Dict = {
   topo: {
     you: "tú",
     syncedWith: "sincronizado con {ref}",
+    cuteSynced: "en sintonía",
     ofBase: "de {ref}",
     toPush: "para enviar",
     toPull: "para traer",

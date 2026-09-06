@@ -110,6 +110,7 @@ export const ptBR: Dict = {
   topo: {
     you: "você",
     syncedWith: "sincronizado com {ref}",
+    cuteSynced: "em sintonia",
     ofBase: "de {ref}",
     toPush: "para enviar",
     toPull: "para trazer",

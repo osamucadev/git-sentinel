@@ -110,6 +110,7 @@ export const en = {
   topo: {
     you: "you",
     syncedWith: "synced with {ref}",
+    cuteSynced: "in sync",
     ofBase: "of {ref}",
     toPush: "to push",
     toPull: "to pull",

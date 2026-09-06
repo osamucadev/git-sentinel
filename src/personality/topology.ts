@@ -72,6 +72,7 @@ export function railVerdict(
 
   switch (rel.kind) {
     case "synced":
+      if (p === "cute") return `${g.synced} ${tone(p, d.topo.cuteSynced)}`;
       return `${g.synced} ${tone(p, fill(d.topo.syncedWith, { ref }))}`;
     case "ahead":
       return `${g.ahead}${rel.ahead}${q} ${suffix}`;

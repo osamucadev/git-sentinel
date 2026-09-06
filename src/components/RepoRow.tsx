@@ -21,6 +21,7 @@ export function RepoRow({
   onRefresh,
   onFetch,
   onRemove,
+  operationsBusy,
 }: {
   repo: RepoView;
   status: RepoStatus;
@@ -30,6 +31,7 @@ export function RepoRow({
   onRefresh: () => void;
   onFetch: () => void;
   onRemove: () => void;
+  operationsBusy: boolean;
 }) {
   const s = repo.state;
   const [menu, setMenu] = useState(false);
@@ -118,13 +120,13 @@ export function RepoRow({
                 {d.card.openFolder}
               </button>
               <button
-                disabled={repo.fetching}
+                disabled={repo.fetching || operationsBusy}
                 onClick={() => { setMenu(false); onFetch(); }}
               >
                 {d.common.fetch}
               </button>
               <button
-                disabled={repo.loading}
+                disabled={repo.loading || operationsBusy}
                 onClick={() => { setMenu(false); onRefresh(); }}
               >
                 {d.common.refresh}

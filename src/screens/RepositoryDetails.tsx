@@ -5,12 +5,14 @@ import { deriveStatus } from "../fleet";
 import { Topology } from "../components/Topology";
 import { headlineText } from "../personality/topology";
 import { repositoryNarrative } from "../narrative";
+import { repositoryActionsDisabled } from "../activity";
 import * as api from "../api";
 
 export function RepositoryDetails({ path, onBack }: { path: string; onBack: () => void }) {
   const app = useApp();
   const d = useDict();
   const p = app.config.personality;
+  const operationActive = repositoryActionsDisabled(app.activity);
   const [filter, setFilter] = useState("");
 
   const repo = app.repos.find((r) => r.path === path);
@@ -41,8 +43,8 @@ export function RepositoryDetails({ path, onBack }: { path: string; onBack: () =
             {">_"}
           </button>
           <button onClick={() => void api.openFolder(path)}>{d.card.openFolder}</button>
-          <button onClick={() => void app.refreshOne(path)}>{d.common.refresh}</button>
-          <button onClick={() => void app.fetchOne(path)} disabled={repo.fetching}>
+          <button onClick={() => void app.refreshOne(path)} disabled={operationActive || repo.loading}>{d.common.refresh}</button>
+          <button onClick={() => void app.fetchOne(path)} disabled={repo.fetching || operationActive}>
             {repo.fetching ? <span className="spin" /> : d.common.fetch}
           </button>
         </div>
@@ -105,6 +107,7 @@ export function RepositoryDetails({ path, onBack }: { path: string; onBack: () =
             <p className="muted">{d.details2.referenceHint}</p>
             <select
               value={repo.referenceBranch ?? s.referenceBranch ?? ""}
+              disabled={operationActive}
               onChange={(e) => void app.setReferenceBranch(path, e.target.value || undefined)}
             >
               <option value="">{d.details2.noReference}</option>

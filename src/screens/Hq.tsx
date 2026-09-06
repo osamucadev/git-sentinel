@@ -18,6 +18,8 @@ import type { RepoView } from "../state/AppState";
 import { RepoRow } from "../components/RepoRow";
 import { Modal } from "../components/Modal";
 import { Toast } from "../components/Toast";
+import { ActivityStrip } from "../components/ActivityStrip";
+import { repositoryActionsDisabled } from "../activity";
 
 type Entry = { repo: RepoView; status: RepoStatus };
 
@@ -104,6 +106,7 @@ export function Hq({ onOpenDetails }: { onOpenDetails: (path: string) => void })
   const fleet = summary.loading > 0
     ? { line: d.hq.loadingFleet }
     : personaFleet(p, d, { summary, attentionRepos });
+  const operationActive = repositoryActionsDisabled(app.activity);
 
   if (app.repos.length === 0) {
     return (
@@ -172,12 +175,14 @@ export function Hq({ onOpenDetails }: { onOpenDetails: (path: string) => void })
             <button className="primary" onClick={addRepository} disabled={busy}>
               {d.hq.addRepository}
             </button>
-            <button onClick={fetchAll} disabled={busy}>
-              {busy ? <span className="spin" /> : fill("{a} ({n})", { a: d.common.fetchAll, n: app.repos.length })}
+            <button onClick={fetchAll} disabled={busy || operationActive}>
+              {busy || operationActive ? <span className="spin" /> : fill("{a} ({n})", { a: d.common.fetchAll, n: app.repos.length })}
             </button>
           </div>
         </div>
       </header>
+
+      {app.activity && <ActivityStrip activity={app.activity} d={d} p={p} />}
 
       {visible.length === 0 && <p className="muted hq-none">{d.hq.subtitle}</p>}
 
@@ -207,6 +212,7 @@ export function Hq({ onOpenDetails }: { onOpenDetails: (path: string) => void })
                     if (!r.ok) setToast({ msg: `${d.errors.fetchFailed}: ${r.error}`, kind: "error" });
                   }}
                   onRemove={() => setConfirmRemove(e.repo.path)}
+                  operationsBusy={operationActive}
                 />
               ))}
             </div>

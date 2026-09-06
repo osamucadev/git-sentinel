@@ -4,6 +4,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
@@ -12,6 +13,8 @@ import * as store from "../store";
 import { applyPersonality } from "../personality";
 import { dict } from "../i18n";
 import { DEFAULT_CONFIG, type RegisteredRepo, type RepositoryState, type SentinelConfig } from "../types";
+import { beginActivity, completeActivity, finishActivityItem, startActivityItem, type Activity, type ActivityKind } from "../activity";
+import { createLocalRefreshScheduler } from "../localRefresh";
 
 /** Per-repository inspection result plus UI status flags. */
 export type RepoView = {
@@ -31,6 +34,8 @@ export type FetchAllSummary = {
   succeeded: number;
   failed: Array<{ path: string; error: string }>;
 };
+
+type InspectResult = { ok: boolean; error?: string };
 
 /** Runs `task` over `items`, at most `limit` in flight at once. No framework:
  * a fixed pool of workers pulling from a shared index. */
@@ -58,6 +63,7 @@ type AppState = {
   ready: boolean;
   config: SentinelConfig;
   repos: RepoView[];
+  activity: Activity | null;
   updateConfig: (patch: Partial<SentinelConfig>) => Promise<void>;
   completeOnboarding: (config: SentinelConfig) => Promise<void>;
   addRepo: (path: string) => Promise<{ ok: true } | { ok: false; error: string }>;
@@ -75,6 +81,11 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
   const [ready, setReady] = useState(false);
   const [config, setConfig] = useState<SentinelConfig>(DEFAULT_CONFIG);
   const [repos, setRepos] = useState<RepoView[]>([]);
+  const [activity, setActivity] = useState<Activity | null>(null);
+  const repoMeta = useRef(new Map<string, { referenceBranch?: string }>());
+  const inspectionRuns = useRef(new Map<string, Promise<InspectResult>>());
+  const fetchAllRunning = useRef(false);
+  const activityClearTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Load persisted state once on startup.
   useEffect(() => {
@@ -95,8 +106,9 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
         })),
       );
       setReady(true);
+      for (const r of savedRepos) void api.watchRepository(r.path).catch(() => {});
       // Inspect all registered repos (local only, no network).
-      for (const r of savedRepos) void inspect(r.path, r.referenceBranch);
+      void runInspectionBatch("startup", savedRepos);
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -110,29 +122,82 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     void store.saveRepos(toSave);
   }, []);
 
-  const inspect = useCallback(async (path: string, referenceBranch?: string) => {
-    setRepos((prev) =>
-      prev.map((r) => (r.path === path ? { ...r, loading: true, error: undefined } : r)),
-    );
-    try {
-      const state = await api.inspectRepository(path, referenceBranch);
-      setRepos((prev) => {
-        const next = prev.map((r) =>
-          r.path === path
-            ? { ...r, state, loading: false, referenceBranch: state.referenceBranch ?? undefined }
-            : r,
-        );
-        persistRepos(next);
-        return next;
-      });
-    } catch (e) {
+  useEffect(() => {
+    repoMeta.current = new Map(repos.map((repo) => [repo.path, { referenceBranch: repo.referenceBranch }]));
+  }, [repos]);
+
+  const settleActivity = useCallback((next: Activity) => {
+    const done = completeActivity(next);
+    setActivity(done);
+    if (activityClearTimer.current) clearTimeout(activityClearTimer.current);
+    activityClearTimer.current = setTimeout(() => setActivity(null), 3500);
+  }, []);
+
+  const inspect = useCallback((path: string, referenceBranch?: string): Promise<InspectResult> => {
+    const existing = inspectionRuns.current.get(path);
+    if (existing) return existing;
+    const task = (async (): Promise<InspectResult> => {
       setRepos((prev) =>
-        prev.map((r) =>
-          r.path === path ? { ...r, error: String(e), loading: false } : r,
-        ),
+        prev.map((r) => (r.path === path ? { ...r, loading: true, error: undefined } : r)),
       );
-    }
+      try {
+        const state = await api.inspectRepository(path, referenceBranch);
+        setRepos((prev) => {
+          const next = prev.map((r) =>
+            r.path === path
+              ? { ...r, state, loading: false, referenceBranch: state.referenceBranch ?? undefined }
+              : r,
+          );
+          persistRepos(next);
+          return next;
+        });
+        return { ok: true };
+      } catch (e) {
+        const error = String(e);
+        setRepos((prev) =>
+          prev.map((r) => (r.path === path ? { ...r, error, loading: false } : r)),
+        );
+        return { ok: false, error };
+      }
+    })();
+    inspectionRuns.current.set(path, task);
+    void task.finally(() => {
+      if (inspectionRuns.current.get(path) === task) inspectionRuns.current.delete(path);
+    });
+    return task;
   }, [persistRepos]);
+
+  const runInspectionBatch = useCallback(async (
+    kind: Extract<ActivityKind, "refresh" | "startup">,
+    targets: Array<{ path: string; referenceBranch?: string }>,
+  ) => {
+    if (targets.length === 0) return;
+    setActivity(beginActivity(kind, targets.length));
+    const results = await Promise.all(targets.map(async (target) => {
+      setActivity((current) => current && current.phase === "running" ? startActivityItem(current, target.path) : current);
+      const result = await inspect(target.path, target.referenceBranch);
+      setActivity((current) => current && current.phase === "running"
+        ? finishActivityItem(current, target.path, result.ok ? undefined : result.error)
+        : current);
+      return { path: target.path, ...result };
+    }));
+    settleActivity({
+      ...beginActivity(kind, targets.length),
+      completed: results.length,
+      failed: results.filter((result) => !result.ok).map((result) => ({ path: result.path, error: result.error ?? "unknown error" })),
+    });
+  }, [inspect, settleActivity]);
+
+  useEffect(() => {
+    const scheduler = createLocalRefreshScheduler(async (path) => {
+      await inspect(path, repoMeta.current.get(path)?.referenceBranch);
+    });
+    let unlisten: (() => void) | undefined;
+    void api.onRepositoryLocalChange((path) => {
+      if (repoMeta.current.has(path)) scheduler.notify(path);
+    }).then((stop) => { unlisten = stop; });
+    return () => { scheduler.dispose(); unlisten?.(); };
+  }, [inspect]);
 
   const updateConfig = useCallback(
     async (patch: Partial<SentinelConfig>) => {
@@ -173,6 +238,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
       });
       if (duplicate) return { ok: false, error: "alreadyRegistered" };
       await inspect(canonical);
+      void api.watchRepository(canonical).catch(() => {});
       return { ok: true };
     },
     [inspect, persistRepos],
@@ -186,6 +252,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
         persistRepos(next);
         return next;
       });
+      void api.unwatchRepository(path).catch(() => {});
     },
     [persistRepos],
   );
@@ -203,17 +270,18 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
   );
 
   const refreshOne = useCallback(
-    async (path: string) => inspect(path, repos.find((r) => r.path === path)?.referenceBranch),
+    async (path: string) => { await inspect(path, repos.find((r) => r.path === path)?.referenceBranch); },
     [inspect, repos],
   );
 
   const refreshAll = useCallback(async () => {
-    const paths = repos.map((r) => r.path);
-    await Promise.all(paths.map((p) => inspect(p, repos.find((r) => r.path === p)?.referenceBranch)));
-  }, [repos, inspect]);
+    await runInspectionBatch("refresh", repos.map((repo) => ({ path: repo.path, referenceBranch: repo.referenceBranch })));
+  }, [repos, runInspectionBatch]);
 
   const fetchOne = useCallback(
-    async (path: string): Promise<{ ok: boolean; error?: string }> => {
+    async (path: string, aggregate = false): Promise<{ ok: boolean; error?: string }> => {
+      if (fetchAllRunning.current && !aggregate) return { ok: false, error: "fetch_all_in_progress" };
+      if (!aggregate) setActivity(beginActivity("fetch", 1));
       setRepos((prev) =>
         prev.map((r) => (r.path === path ? { ...r, fetching: true } : r)),
       );
@@ -230,38 +298,51 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
           return next;
         });
         await inspect(path, repos.find((r) => r.path === path)?.referenceBranch);
+        if (!aggregate) settleActivity({ ...beginActivity("fetch", 1), completed: 1 });
         return { ok: true };
       } catch (e) {
         const error = String(e);
         setRepos((prev) =>
           prev.map((r) => (r.path === path ? { ...r, fetching: false, fetchError: error } : r)),
         );
+        if (!aggregate) settleActivity({ ...beginActivity("fetch", 1), completed: 1, failed: [{ path, error }] });
         return { ok: false, error };
       }
     },
-    [inspect, persistRepos, repos],
+    [inspect, persistRepos, repos, settleActivity],
   );
 
   const fetchAll = useCallback(async (): Promise<FetchAllSummary> => {
     // A few at a time; one repo failing must not stop the others.
-    const paths = repos.map((r) => r.path);
-    const results = await mapWithConcurrency(paths, FETCH_ALL_CONCURRENCY, async (p) => ({
-      path: p,
-      ...(await fetchOne(p)),
-    }));
+    const targets = repos.map((repo) => ({ path: repo.path, referenceBranch: repo.referenceBranch }));
+    if (targets.length === 0) return { succeeded: 0, failed: [] };
+    fetchAllRunning.current = true;
+    setActivity(beginActivity("fetchAll", targets.length));
+    const results = await mapWithConcurrency(targets, FETCH_ALL_CONCURRENCY, async (target) => {
+      setActivity((current) => current && current.phase === "running" ? startActivityItem(current, target.path) : current);
+      const result = await fetchOne(target.path, true);
+      setActivity((current) => current && current.phase === "running"
+        ? finishActivityItem(current, target.path, result.ok ? undefined : result.error)
+        : current);
+      return { path: target.path, ...result };
+    });
+    fetchAllRunning.current = false;
+    const failed = results
+      .filter((r) => !r.ok)
+      .map((r) => ({ path: r.path, error: r.error ?? "unknown error" }));
+    settleActivity({ ...beginActivity("fetchAll", targets.length), completed: results.length, failed });
     return {
       succeeded: results.filter((r) => r.ok).length,
-      failed: results
-        .filter((r) => !r.ok)
-        .map((r) => ({ path: r.path, error: r.error ?? "unknown error" })),
+      failed,
     };
-  }, [repos, fetchOne]);
+  }, [repos, fetchOne, settleActivity]);
 
   const value = useMemo<AppState>(
     () => ({
       ready,
       config,
       repos,
+      activity,
       updateConfig,
       completeOnboarding,
       addRepo,
@@ -276,6 +357,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
       ready,
       config,
       repos,
+      activity,
       updateConfig,
       completeOnboarding,
       addRepo,

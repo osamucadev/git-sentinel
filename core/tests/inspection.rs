@@ -105,6 +105,31 @@ fn local_divergence_is_measured_against_base_branch() {
 }
 
 #[test]
+fn unresolved_merge_conflict_is_reported() {
+    let repo = new_repo();
+    let p = repo.path();
+    commit_file(p, "shared.txt", "base\n", "base");
+    git(p, &["checkout", "-q", "-b", "other"]);
+    commit_file(p, "shared.txt", "other change\n", "other");
+    git(p, &["checkout", "-q", "main"]);
+    commit_file(p, "shared.txt", "main change\n", "main");
+    // Merge is expected to fail with a conflict; ignore its exit status.
+    let _ = Command::new("git")
+        .args(["merge", "other"])
+        .current_dir(p)
+        .env("GIT_AUTHOR_NAME", "Test")
+        .env("GIT_AUTHOR_EMAIL", "test@example.com")
+        .env("GIT_COMMITTER_NAME", "Test")
+        .env("GIT_COMMITTER_EMAIL", "test@example.com")
+        .output()
+        .unwrap();
+
+    let state = inspect(p.to_str().unwrap()).unwrap();
+    assert_eq!(state.working_tree.conflicted, 1);
+    assert!(!state.working_tree.clean);
+}
+
+#[test]
 fn repository_without_remote_still_inspects() {
     let repo = new_repo();
     commit_file(repo.path(), "a.txt", "one", "initial");

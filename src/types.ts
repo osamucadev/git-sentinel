@@ -18,6 +18,7 @@ export type RepositoryState = {
     modified: number;
     deleted: number;
     untracked: number;
+    conflicted: number;
   };
   latestCommit: {
     hash: string;

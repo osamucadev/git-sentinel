@@ -46,22 +46,38 @@ export function RepoCard({
         {s && !repo.loading && (
           <span
             className={`badge ${
-              s.detachedHead ? "detached" : s.workingTree.clean ? "clean" : "dirty"
+              s.workingTree.conflicted > 0
+                ? "conflicted"
+                : s.detachedHead
+                  ? "detached"
+                  : s.workingTree.clean
+                    ? "clean"
+                    : "dirty"
             }`}
           >
-            {s.detachedHead
-              ? d.card.detached
-              : s.workingTree.clean
-                ? d.card.clean
-                : d.card.dirty}
+            {s.workingTree.conflicted > 0
+              ? d.card.conflicted
+              : s.detachedHead
+                ? d.card.detached
+                : s.workingTree.clean
+                  ? d.card.clean
+                  : d.card.dirty}
           </span>
         )}
       </div>
 
       {repo.error && <div className="muted">{d.errors.inspectFailed}</div>}
+      {repo.fetchError && (
+        <div className="fetch-error">{d.errors.fetchFailed}: {repo.fetchError}</div>
+      )}
 
       {s && !s.workingTree.clean && (
         <div className="counts">
+          {s.workingTree.conflicted > 0 && (
+            <span className="conflict-count">
+              <b>{s.workingTree.conflicted}</b> {d.card.conflicts}
+            </span>
+          )}
           {s.workingTree.staged > 0 && <span><b>{s.workingTree.staged}</b> {d.card.staged}</span>}
           {s.workingTree.modified > 0 && <span><b>{s.workingTree.modified}</b> {d.card.modified}</span>}
           {s.workingTree.deleted > 0 && <span><b>{s.workingTree.deleted}</b> {d.card.deleted}</span>}

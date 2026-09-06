@@ -29,6 +29,8 @@ pub struct WorkingTree {
     pub modified: u32,
     pub deleted: u32,
     pub untracked: u32,
+    /// Paths with unresolved merge conflicts (porcelain v2 `u` records).
+    pub conflicted: u32,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

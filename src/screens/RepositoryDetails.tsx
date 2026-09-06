@@ -80,6 +80,10 @@ export function RepositoryDetails({ path, onBack }: { path: string; onBack: () =
               <span className="k">{d.card.modified}</span><span className="v">{s.workingTree.modified}</span>
               <span className="k">{d.card.deleted}</span><span className="v">{s.workingTree.deleted}</span>
               <span className="k">{d.card.untracked}</span><span className="v">{s.workingTree.untracked}</span>
+              <span className="k">{d.card.conflicts}</span>
+              <span className={`v ${s.workingTree.conflicted > 0 ? "conflict-count" : ""}`}>
+                <b>{s.workingTree.conflicted}</b>
+              </span>
             </div>
           </section>
 
@@ -121,6 +125,9 @@ export function RepositoryDetails({ path, onBack }: { path: string; onBack: () =
                   ? `${d.hq.lastFetch}: ${relativeTime(repo.lastSuccessfulFetch, d)}`
                   : d.card.fetchedNever}
               </p>
+            )}
+            {repo.fetchError && (
+              <div className="fetch-error">{d.errors.fetchFailed}: {repo.fetchError}</div>
             )}
           </section>
 

@@ -1,23 +1,28 @@
 use std::path::Path;
 use std::process::Command;
 
-/// A terminal emulator and how to tell it which directory to start in.
-/// `None` means the emulator honors the inherited working directory.
+/// A terminal emulator, the fixed args it needs, and how to tell it which
+/// directory to open in.
 struct Terminal {
     bin: &'static str,
-    workdir_arg: Option<&'static str>,
+    args: &'static [&'static str],
+    /// `Some(prefix)` builds one argument as `{prefix}{dir}`; `None` relies on
+    /// the inherited working directory.
+    workdir_flag: Option<&'static str>,
 }
 
-/// Tried in order; the first emulator present on PATH wins. Emulators that are
-/// known to ignore the inherited cwd (notably gnome-terminal) are listed with
-/// an explicit flag and placed before the generic `x-terminal-emulator` entry.
-const TERMINALS: [Terminal; 6] = [
-    Terminal { bin: "gnome-terminal", workdir_arg: Some("--working-directory=") },
-    Terminal { bin: "konsole", workdir_arg: Some("--workdir=") },
-    Terminal { bin: "xfce4-terminal", workdir_arg: Some("--working-directory=") },
-    Terminal { bin: "tilix", workdir_arg: Some("--working-directory=") },
-    Terminal { bin: "x-terminal-emulator", workdir_arg: None },
-    Terminal { bin: "xterm", workdir_arg: None },
+/// Tried in order; the first emulator present on PATH wins. Client/server
+/// emulators (ptyxis, gnome-terminal, kgx) ignore the inherited cwd, so they
+/// are given an explicit flag and listed before the generic fallbacks.
+const TERMINALS: [Terminal; 8] = [
+    Terminal { bin: "ptyxis", args: &["--new-window"], workdir_flag: Some("--working-directory=") },
+    Terminal { bin: "gnome-terminal", args: &[], workdir_flag: Some("--working-directory=") },
+    Terminal { bin: "kgx", args: &[], workdir_flag: Some("--working-directory=") },
+    Terminal { bin: "konsole", args: &[], workdir_flag: Some("--workdir=") },
+    Terminal { bin: "xfce4-terminal", args: &[], workdir_flag: Some("--working-directory=") },
+    Terminal { bin: "tilix", args: &[], workdir_flag: Some("--working-directory=") },
+    Terminal { bin: "x-terminal-emulator", args: &[], workdir_flag: None },
+    Terminal { bin: "xterm", args: &[], workdir_flag: None },
 ];
 
 fn on_path(bin: &str) -> bool {
@@ -44,7 +49,8 @@ pub fn open_in_terminal(dir: &str) -> Result<(), String> {
 
     let mut cmd = Command::new(terminal.bin);
     cmd.current_dir(path);
-    if let Some(prefix) = terminal.workdir_arg {
+    cmd.args(terminal.args);
+    if let Some(prefix) = terminal.workdir_flag {
         cmd.arg(format!("{prefix}{dir}"));
     }
 

@@ -757,54 +757,55 @@ ul { margin: 0; padding: 0; }
 :root[data-personality="scifi"] select { color-scheme: dark; color: #e7fbff; background: #102f47; border-color: #23eff2; }
 :root[data-personality="scifi"] select option { color: #e7fbff; background: #102f47; }
 
-/* Jarbas — an executive command center: deep blue, fine telemetry and calm glow. */
+/* Jarbas — an executive operations desk: quiet navy, measured hierarchy and soft telemetry. */
 :root[data-personality="jarbas"] {
-  --bg: #061521;
-  --surface: #0a2030;
-  --surface-2: #0d2b3f;
-  --border: #17455b;
-  --border-strong: #2a7790;
-  --text: #def8ff;
-  --text-dim: #77aab8;
-  --accent: #22d9e8;
-  --accent-weak: #103a4b;
-  --clean: #31e6a4;
-  --dirty: #f3bd48;
-  --ahead: #5a9dff;
-  --behind: #c46df3;
-  --radius: 5px;
-  --radius-lg: 7px;
-  --row-pad-y: 11px;
-  --font-display: var(--font-mono);
+  --bg: #08111c;
+  --surface: #0d1b2a;
+  --surface-2: #13283a;
+  --border: #223c52;
+  --border-strong: #3f6683;
+  --text: #e2eef6;
+  --text-dim: #8da7ba;
+  --accent: #83b6df;
+  --accent-weak: #1a354a;
+  --clean: #58c6ac;
+  --dirty: #e1b66b;
+  --ahead: #8d9fec;
+  --behind: #bd91d5;
+  --radius: 10px;
+  --radius-lg: 15px;
+  --row-pad-y: 12px;
+  --font-display: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --display-transform: none;
+  --display-spacing: .01em;
   --topo-line: 1px solid color-mix(in srgb, var(--accent) 78%, var(--border));
 }
-:root[data-personality="jarbas"] body { background-image: radial-gradient(circle at 60% 0, rgba(29, 191, 221, 0.1), transparent 26%), radial-gradient(#2d7790 1px, transparent 1px); background-size: auto, 17px 17px; }
-:root[data-personality="jarbas"] .topbar { padding: 14px 28px; background: rgba(5, 19, 30, 0.94); border-bottom-color: #1f6c83; box-shadow: 0 4px 22px rgba(0,0,0,0.26); }
-:root[data-personality="jarbas"] .brand-mark { width: 26px; height: 26px; border: 1px solid var(--accent); border-radius: 50%; font-size: 10px; color: var(--accent); box-shadow: 0 0 0 5px rgba(34,217,232,0.08), 0 0 14px rgba(34,217,232,0.32); }
-:root[data-personality="jarbas"] .topbar .brand h1 { font-family: var(--font-mono); font-size: 18px; letter-spacing: .2em; }
+:root[data-personality="jarbas"] body { background: radial-gradient(ellipse at 50% -20%, #183451 0, transparent 52%), #08111c; }
+:root[data-personality="jarbas"] .topbar { padding: 15px 28px; background: rgba(8,17,28,.9); border-bottom-color: #203b52; box-shadow: 0 8px 28px rgba(0,0,0,.3); }
+:root[data-personality="jarbas"] .brand-mark { width: 27px; height: 27px; border: 1px solid #6f99bb; border-radius: 8px; font-size: 11px; color: #b7d5ed; box-shadow: none; }
+:root[data-personality="jarbas"] .topbar .brand h1 { font-family: var(--font-display); font-size: 17px; letter-spacing: .05em; }
 :root[data-personality="jarbas"] .content.hq { max-width: 1460px; }
-:root[data-personality="jarbas"] .hq-head { padding: 21px 185px 20px 22px; border: 1px solid #1c6078; background: linear-gradient(90deg, rgba(8,32,48,.94), rgba(9,30,45,.58)); box-shadow: inset 0 0 0 1px rgba(34,217,232,.08), 0 10px 30px rgba(0,0,0,.22); }
-:root[data-personality="jarbas"] .hq-presence { display: flex; position: absolute; right: 36px; top: 27px; width: 96px; height: 96px; justify-content: center; align-items: center; gap: 0; border: 1px solid #28bdd0; border-radius: 50%; box-shadow: inset 0 0 0 12px rgba(34,217,232,.04), 0 0 18px rgba(34,217,232,.14); }
-:root[data-personality="jarbas"] .hq-presence::before, :root[data-personality="jarbas"] .hq-presence::after { content: ""; position: absolute; width: 120px; height: 1px; background: linear-gradient(90deg, transparent, var(--accent), transparent); }
-:root[data-personality="jarbas"] .hq-presence::after { transform: rotate(90deg); }
-:root[data-personality="jarbas"] .hq-presence i { width: 7px; height: 7px; margin: 0 4px; border: 1px solid var(--accent); border-radius: 50%; box-shadow: 0 0 7px var(--accent); }
-:root[data-personality="jarbas"] .hq-head .hello { font-size: 24px; font-weight: 600; color: #74f4ff; text-shadow: 0 0 13px rgba(34,217,232,.45); }
-:root[data-personality="jarbas"] .hq-interpretation { font-family: var(--font-mono); font-size: 14px; }
+:root[data-personality="jarbas"] .hq-head { padding: 23px 190px 22px 24px; border: 1px solid #28465f; border-radius: 16px; background: linear-gradient(115deg, #102438, #0b1a29 70%); box-shadow: inset 0 1px 0 rgba(255,255,255,.04), 0 16px 36px rgba(0,0,0,.22); }
+:root[data-personality="jarbas"] .hq-presence { display: flex; position: absolute; right: 34px; top: 33px; width: 112px; height: 50px; justify-content: center; align-items: center; gap: 8px; border: 1px solid #3f6683; border-radius: 12px; background: rgba(131,182,223,.06); }
+:root[data-personality="jarbas"] .hq-presence::before, :root[data-personality="jarbas"] .hq-presence::after { content: ""; width: 20px; height: 2px; border-radius: 99px; background: #83b6df; opacity: .7; }
+:root[data-personality="jarbas"] .hq-presence i { width: 6px; height: 6px; margin: 0; background: #58c6ac; border-radius: 50%; box-shadow: 0 0 8px rgba(88,198,172,.45); }
+:root[data-personality="jarbas"] .hq-head .hello { font-size: 25px; font-weight: 550; color: #eef7fc; text-shadow: none; }
+:root[data-personality="jarbas"] .hq-interpretation { font-family: var(--font-display); font-size: 14px; }
 :root[data-personality="jarbas"] .hq-interpretation-detail { max-width: 700px; line-height: 1.65; }
-:root[data-personality="jarbas"] .hq-summary { color: #9ed4dd; }
-:root[data-personality="jarbas"] .chip-filter { border-radius: 4px; padding: 4px 11px; }
-:root[data-personality="jarbas"] .repo-list { border-radius: 6px; background: linear-gradient(135deg, rgba(34,217,232,.035), transparent 55%), var(--surface); box-shadow: 0 14px 35px rgba(0,0,0,0.22); }
+:root[data-personality="jarbas"] .hq-summary { color: #a8c1d1; }
+:root[data-personality="jarbas"] .chip-filter { border-radius: 999px; padding: 4px 11px; }
+:root[data-personality="jarbas"] .repo-list { border-radius: 13px; background: #0d1b2a; box-shadow: 0 14px 35px rgba(0,0,0,0.22); }
 :root[data-personality="jarbas"] .repo-row { grid-template-columns: minmax(200px, 255px) 145px minmax(340px, 1fr) minmax(160px, 220px) auto; gap: 17px; }
-:root[data-personality="jarbas"] .repo-row:hover { background: #0e2c3e; }
-:root[data-personality="jarbas"] .rr-name { font-family: var(--font-mono); font-size: 14px; font-weight: 600; }
-:root[data-personality="jarbas"] .rr-name::before { content: "◈"; color: var(--accent); margin-right: 7px; font-size: 10px; text-shadow: 0 0 7px var(--accent); }
-:root[data-personality="jarbas"] .rr-chip { border-radius: 3px; font-family: var(--font-mono); font-weight: 600; }
+:root[data-personality="jarbas"] .repo-row:hover { background: #13283a; }
+:root[data-personality="jarbas"] .rr-name { font-family: var(--font-display); font-size: 15px; font-weight: 600; }
+:root[data-personality="jarbas"] .rr-name::before { content: "●"; color: #58c6ac; margin-right: 7px; font-size: 8px; }
+:root[data-personality="jarbas"] .rr-chip { border-radius: 999px; font-family: var(--font-display); font-weight: 600; }
 :root[data-personality="jarbas"] .topo-spine { --topo-label-width: 178px; --topo-track-width: 188px; --topo-pivot-offset: 94px; }
 :root[data-personality="jarbas"] .topo-pivot { font-family: var(--font-mono); font-size: 13px; }
-:root[data-personality="jarbas"] .group-head { letter-spacing: 0.14em; color: #71dbe7; }
-:root[data-personality="jarbas"] .group-head::after { background: linear-gradient(90deg, #207e91, transparent); }
-:root[data-personality="jarbas"] select { color-scheme: dark; color: #def8ff; background: #0a2030; border-color: #2a7790; }
-:root[data-personality="jarbas"] select option { color: #def8ff; background: #0a2030; }
+:root[data-personality="jarbas"] .group-head { letter-spacing: .08em; color: #9fc1d8; }
+:root[data-personality="jarbas"] .group-head::after { background: linear-gradient(90deg, #385a72, transparent); }
+:root[data-personality="jarbas"] select { color-scheme: dark; color: #e2eef6; background: #0d1b2a; border-color: #3f6683; }
+:root[data-personality="jarbas"] select option { color: #e2eef6; background: #0d1b2a; }
 
 /* Retro — printed paper, ink ribbons and tactile, slightly imperfect frames. */
 :root[data-personality="retro"] {

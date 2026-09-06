@@ -596,42 +596,73 @@ ul { margin: 0; padding: 0; }
 :root[data-personality="technical"] .repo-row .rr-actions .icon-btn { opacity: 0.68; }
 :root[data-personality="technical"] .repo-row:hover .rr-actions .icon-btn { opacity: 1; }
 
-/* Cute — generous rhythm, soft materials and quietly expressive details. */
+/* Cute — a soft retro console: grid paper, framed modules and pixel-like shadows. */
 :root[data-personality="cute"] {
-  --bg: #fff7fb;
-  --surface: #fffdfd;
-  --surface-2: #fff0f7;
-  --border: #f0d8e5;
-  --border-strong: #e9bcd4;
-  --text: #513341;
-  --text-dim: #a07088;
-  --accent: #d95291;
-  --accent-weak: #ffe0ee;
-  --radius: 13px;
-  --radius-lg: 20px;
-  --row-pad-y: 13px;
+  --bg: #fbf5ff;
+  --surface: #fdf9ff;
+  --surface-2: #f0e1ff;
+  --border: #cdb9ed;
+  --border-strong: #7957b5;
+  --text: #443066;
+  --text-dim: #866da7;
+  --accent: #946ee0;
+  --accent-weak: #e6d7ff;
+  --clean: #48ae8b;
+  --dirty: #e18c5c;
+  --ahead: #7767d8;
+  --behind: #d66f9a;
+  --radius: 5px;
+  --radius-lg: 7px;
+  --shadow: 3px 3px 0 rgba(115, 82, 173, 0.28);
+  --font: "Trebuchet MS", "Segoe UI", sans-serif;
+  --font-display: "Trebuchet MS", "Segoe UI", sans-serif;
+  --font-mono: "Ubuntu Mono", "DejaVu Sans Mono", monospace;
+  --display-weight: 700;
+  --row-pad-y: 12px;
+  --topo-line: 2px solid #ad8be8;
+  --chip-radius: 5px;
 }
-:root[data-personality="cute"] .topbar { border-bottom-color: #f4d7e5; }
-:root[data-personality="cute"] .brand-mark { color: #cf6191; font-size: 20px; transform: rotate(45deg); }
-:root[data-personality="cute"] .hq-head { padding: 18px 190px 18px 18px; border: 1px solid var(--border); border-radius: 24px; background: linear-gradient(115deg, #fffdfd, #fff0f7); }
-:root[data-personality="cute"] .hq-presence { display: flex; position: absolute; right: 32px; top: 28px; gap: 12px; align-items: end; }
-:root[data-personality="cute"] .hq-presence i { display: block; width: 14px; height: 14px; border-radius: 50% 50% 50% 3px; transform: rotate(-45deg); background: #f7a7c7; opacity: 0.75; }
-:root[data-personality="cute"] .hq-presence i:nth-child(2) { width: 24px; height: 24px; background: #d95291; opacity: 0.9; }
-:root[data-personality="cute"] .hq-presence i:nth-child(3) { width: 10px; height: 10px; background: #d8a3dc; }
-:root[data-personality="cute"] .hq-head .hello { font-size: 24px; }
-:root[data-personality="cute"] .hq-interpretation { font-weight: 600; }
-:root[data-personality="cute"] .chip-filter { padding: 5px 11px; box-shadow: 0 1px 0 rgba(217, 82, 145, 0.08); }
-:root[data-personality="cute"] .repo-list { border-radius: 18px; box-shadow: 0 10px 26px rgba(190, 91, 135, 0.06); }
-:root[data-personality="cute"] .repo-list { overflow: visible; }
-:root[data-personality="cute"] .repo-row { grid-template-columns: 240px 150px minmax(0, 1fr) 180px auto; gap: 14px; }
-:root[data-personality="cute"] .repo-row:first-child { border-radius: 18px 18px 0 0; }
-:root[data-personality="cute"] .repo-row:last-child { border-radius: 0 0 18px 18px; }
-:root[data-personality="cute"] .repo-row:hover { background: #fff5fa; }
+:root[data-personality="cute"] body {
+  background-color: var(--bg);
+  background-image: linear-gradient(rgba(148, 110, 224, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(148, 110, 224, 0.1) 1px, transparent 1px);
+  background-size: 9px 9px;
+}
+:root[data-personality="cute"] .topbar { padding: 12px 24px; border-bottom: 2px solid #c8afe9; background: rgba(253,249,255,0.92); box-shadow: 0 2px 0 rgba(121,87,181,0.12); }
+:root[data-personality="cute"] .brand-mark { width: 24px; height: 24px; color: #fff; background: var(--accent); border: 2px solid #68439d; box-shadow: 2px 2px 0 #d7c2f5; font-size: 10px; transform: rotate(45deg); }
+:root[data-personality="cute"] .content.hq { max-width: 1500px; }
+:root[data-personality="cute"] .hq-head { padding: 20px 210px 18px 20px; border: 2px solid #7654ac; border-radius: 6px; background: linear-gradient(135deg, #f2e2ff 0 54%, #e2cff8 54% 58%, #f7edff 58%); box-shadow: 5px 5px 0 #cbb1ed, inset 0 0 0 3px rgba(255,255,255,0.55); }
+:root[data-personality="cute"] .hq-head::before { content: ""; position: absolute; right: 46px; top: 23px; width: 66px; height: 66px; border-radius: 50%; background: radial-gradient(circle at 34% 30%, #fff8dd 0 5%, #ffd991 6% 14%, #f29eb8 15% 100%); border: 2px solid #7b58b5; box-shadow: 3px 3px 0 #c6a8ea; }
+:root[data-personality="cute"] .hq-head::after { content: ""; position: absolute; right: 32px; top: 46px; width: 94px; height: 22px; border: 3px solid #8964c6; border-left-color: transparent; border-right-color: transparent; border-radius: 50%; transform: rotate(-17deg); }
+:root[data-personality="cute"] .hq-presence { display: flex; position: absolute; right: 136px; top: 28px; gap: 14px; align-items: end; }
+:root[data-personality="cute"] .hq-presence i { display: block; width: 8px; height: 8px; background: #fff; box-shadow: 0 0 0 2px #ba91e6; transform: rotate(45deg); }
+:root[data-personality="cute"] .hq-presence i:nth-child(2) { width: 12px; height: 12px; background: #fff6c7; box-shadow: 0 0 0 2px #e4ba71; }
+:root[data-personality="cute"] .hq-presence i:nth-child(3) { width: 6px; height: 6px; background: #f9c3dc; box-shadow: 0 0 0 2px #d974a6; }
+:root[data-personality="cute"] .hq-head .hello { font-size: 25px; letter-spacing: 0.01em; }
+:root[data-personality="cute"] .hq-interpretation { font-weight: 700; }
+:root[data-personality="cute"] .hq-summary { color: #70558f; }
+:root[data-personality="cute"] .chip-filter { padding: 4px 10px; border: 1px solid #a983da; background: rgba(255,255,255,0.72); box-shadow: 2px 2px 0 rgba(173,139,232,0.18); }
+:root[data-personality="cute"] .chip-filter.on { border-color: #69419d; box-shadow: 2px 2px 0 #c7a8ee; }
+:root[data-personality="cute"] .hq-tools button { border-width: 2px; box-shadow: 2px 2px 0 rgba(116,83,178,0.22); }
+:root[data-personality="cute"] .hq-search { border-width: 2px; background: rgba(255,255,255,0.76); }
+:root[data-personality="cute"] .group-head { color: #71519b; letter-spacing: 0.13em; }
+:root[data-personality="cute"] .group-head::before { content: "✦"; color: #f3b9d4; font-size: 13px; }
+:root[data-personality="cute"] .group-head::after { height: 2px; background: linear-gradient(90deg, #b99ae3, transparent); opacity: 0.8; }
+:root[data-personality="cute"] .group-count { border: 1px solid #c9afe9; }
+:root[data-personality="cute"] .repo-list { display: flex; flex-direction: column; gap: 8px; border: 0; border-radius: 0; overflow: visible; background: transparent; box-shadow: none; }
+:root[data-personality="cute"] .repo-row { grid-template-columns: 235px 146px minmax(0, 1fr) 176px auto; gap: 14px; border: 2px solid #c8afe9; border-radius: 6px; background: rgba(255,252,255,0.94); box-shadow: 3px 3px 0 rgba(158,125,210,0.22); }
+:root[data-personality="cute"] .repo-row:last-child { border-bottom: 2px solid #c8afe9; }
+:root[data-personality="cute"] .repo-row:first-child, :root[data-personality="cute"] .repo-row:last-child { border-radius: 6px; }
+:root[data-personality="cute"] .repo-row:hover { background: #f4eaff; border-color: #9066cc; box-shadow: 4px 4px 0 rgba(133,95,192,0.27); transform: translate(-1px, -1px); }
+:root[data-personality="cute"] .repo-row[data-tier="attention"] { box-shadow: inset 4px 0 0 var(--dirty), 3px 3px 0 rgba(158,125,210,0.22); }
+:root[data-personality="cute"] .repo-row[data-tier="ahead"] { box-shadow: inset 4px 0 0 var(--ahead), 3px 3px 0 rgba(158,125,210,0.22); }
+:root[data-personality="cute"] .repo-row[data-tier="blocked"] { box-shadow: inset 4px 0 0 var(--danger), 3px 3px 0 rgba(158,125,210,0.22); }
 :root[data-personality="cute"] .repo-row:has(.menu-pop) { position: relative; z-index: 4; }
 :root[data-personality="cute"] .rr-name::before { content: "✦"; color: var(--accent); margin-right: 6px; font-size: 10px; }
-:root[data-personality="cute"] .rr-chip { padding: 3px 9px; }
-:root[data-personality="cute"] .topo-spine { --topo-label-width: 124px; --topo-track-width: 112px; --topo-pivot-offset: 56px; }
-:root[data-personality="cute"] .topo-pivot { max-width: 230px; overflow: hidden; text-overflow: ellipsis; }
+:root[data-personality="cute"] .rr-chip { padding: 3px 8px; border: 1px solid color-mix(in srgb, currentColor 35%, transparent); box-shadow: 1px 1px 0 rgba(143,105,203,0.1); }
+:root[data-personality="cute"] .rr-actions .icon-btn { border-width: 2px; border-radius: 5px; box-shadow: 2px 2px 0 rgba(141,105,201,0.18); }
+:root[data-personality="cute"] .menu-pop { border: 2px solid #7654ac; border-radius: 5px; box-shadow: 4px 4px 0 #cfb6ef; background: #fffaff; }
+:root[data-personality="cute"] .topo-spine { --topo-label-width: 118px; --topo-track-width: 116px; --topo-pivot-offset: 58px; }
+:root[data-personality="cute"] .topo-pivot { max-width: 230px; overflow: hidden; text-overflow: ellipsis; color: #593c87; }
 :root[data-personality="cute"] .topo-branch { display: inline-block; max-width: 200px; overflow: hidden; text-overflow: ellipsis; vertical-align: bottom; }
 :root[data-personality="cute"] .topo-rail { column-gap: 5px; }
 :root[data-personality="cute"] .topo-rail-verdict { overflow: hidden; text-overflow: ellipsis; min-width: 0; }
@@ -639,7 +670,6 @@ ul { margin: 0; padding: 0; }
 :root[data-personality="cute"] .topo-seg { border-radius: 999px; }
 :root[data-personality="cute"] .topo-node-you { transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1); }
 :root[data-personality="cute"] .repo-row:hover .topo-node-you { transform: scale(1.22); }
-:root[data-personality="cute"] .group-head::after { opacity: 0.55; }
 
 /* Sci-Fi — an understated command center built from rails, signals and mono type. */
 :root[data-personality="scifi"] {

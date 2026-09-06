@@ -3,8 +3,7 @@ use std::path::Path;
 use crate::git::{is_work_tree, run_git, work_tree_root};
 use crate::model::*;
 
-/// Branch names, in preference order, considered as a local base for
-/// divergence comparison when the current branch is not itself a base.
+/// Fallback base branches, in preference order, for a feature/other branch.
 const BASE_CANDIDATES: [&str; 3] = ["main", "master", "develop"];
 
 /// Parsed result of `git status --porcelain=v2 --branch`.
@@ -23,11 +22,16 @@ pub struct WorkingTreeCounts {
     pub modified: u32,
     pub deleted: u32,
     pub untracked: u32,
+    pub conflicted: u32,
 }
 
 impl WorkingTreeCounts {
     fn clean(&self) -> bool {
-        self.staged == 0 && self.modified == 0 && self.deleted == 0 && self.untracked == 0
+        self.staged == 0
+            && self.modified == 0
+            && self.deleted == 0
+            && self.untracked == 0
+            && self.conflicted == 0
     }
 }
 
@@ -72,6 +76,9 @@ pub fn parse_status(output: &str) -> StatusInfo {
                     info.working_tree.deleted += 1;
                 }
             }
+        } else if line.starts_with("u ") {
+            // Unmerged / conflicted path.
+            info.working_tree.conflicted += 1;
         } else if line.starts_with("? ") {
             info.working_tree.untracked += 1;
         }
@@ -80,18 +87,25 @@ pub fn parse_status(output: &str) -> StatusInfo {
     info
 }
 
-/// Chooses a local base branch for divergence comparison.
+/// Chooses a local base branch to compare the current branch against.
 /// Pure function so the selection rule can be tested directly.
+///
+/// Rules:
+/// - on `main` or `master`: no local base comparison;
+/// - on `develop`: compare against local `main` if it exists, otherwise none;
+/// - on any other branch: prefer local `main`, then `master`, then `develop`;
+/// - if no candidate branch exists locally: none (never invented).
 pub fn pick_base_branch(current: Option<&str>, branches: &[String]) -> Option<String> {
-    if let Some(cur) = current {
-        if BASE_CANDIDATES.contains(&cur) {
-            return Some(cur.to_string());
-        }
+    let has = |name: &str| branches.iter().any(|b| b == name);
+
+    match current {
+        Some("main") | Some("master") => None,
+        Some("develop") => has("main").then(|| "main".to_string()),
+        _ => BASE_CANDIDATES
+            .iter()
+            .find(|c| has(c))
+            .map(|c| c.to_string()),
     }
-    BASE_CANDIDATES
-        .iter()
-        .find(|c| branches.iter().any(|b| b == *c))
-        .map(|c| c.to_string())
 }
 
 /// Parses `git rev-list --left-right --count A...B` output ("<left>\t<right>").
@@ -214,6 +228,7 @@ pub fn inspect(path: &str) -> Result<RepositoryState, String> {
             modified: status.working_tree.modified,
             deleted: status.working_tree.deleted,
             untracked: status.working_tree.untracked,
+            conflicted: status.working_tree.conflicted,
         },
         latest_commit,
         local_branches: LocalBranches {
@@ -282,17 +297,34 @@ mod tests {
     }
 
     #[test]
-    fn base_branch_prefers_current_when_it_is_a_base() {
+    fn base_branch_none_on_main_or_master() {
+        let branches = vec!["main".to_string(), "master".to_string()];
+        assert_eq!(pick_base_branch(Some("main"), &branches), None);
+        assert_eq!(pick_base_branch(Some("master"), &branches), None);
+    }
+
+    #[test]
+    fn base_branch_develop_compares_against_main_when_present() {
         let branches = vec!["main".to_string(), "develop".to_string()];
         assert_eq!(
             pick_base_branch(Some("develop"), &branches).as_deref(),
-            Some("develop")
+            Some("main")
         );
     }
 
     #[test]
-    fn base_branch_falls_back_to_first_candidate_present() {
-        let branches = vec!["feature/x".to_string(), "master".to_string()];
+    fn base_branch_develop_has_no_base_without_main() {
+        let branches = vec!["develop".to_string(), "master".to_string()];
+        assert_eq!(pick_base_branch(Some("develop"), &branches), None);
+    }
+
+    #[test]
+    fn base_branch_feature_prefers_main_then_master_then_develop() {
+        let branches = vec![
+            "feature/x".to_string(),
+            "master".to_string(),
+            "develop".to_string(),
+        ];
         assert_eq!(
             pick_base_branch(Some("feature/x"), &branches).as_deref(),
             Some("master")
@@ -303,6 +335,17 @@ mod tests {
     fn base_branch_none_when_no_candidate_exists() {
         let branches = vec!["feature/x".to_string(), "trunk".to_string()];
         assert_eq!(pick_base_branch(Some("feature/x"), &branches), None);
+    }
+
+    #[test]
+    fn counts_unmerged_paths_as_conflicted() {
+        let out = "\
+# branch.head work
+u UU N... 100644 100644 100644 100644 aa bb cc dd both.txt
+";
+        let info = parse_status(out);
+        assert_eq!(info.working_tree.conflicted, 1);
+        assert!(!info.working_tree.clean());
     }
 
     #[test]

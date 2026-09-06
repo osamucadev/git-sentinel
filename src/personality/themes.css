@@ -326,6 +326,10 @@ code, .mono { font-family: var(--font-mono); }
 }
 
 .rr-state { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+.rr-branch { margin-top: 3px; color: var(--text); font-size: 12px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rr-story { min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 6px; }
+.rr-story-lines { display: flex; flex-direction: column; gap: 3px; min-width: 0; font-size: 12px; line-height: 1.42; color: var(--text-dim); }
+.rr-story-lines span { overflow-wrap: anywhere; }
 .rr-chip {
   align-self: flex-start;
   font-size: 11px; padding: 2px 8px; border-radius: var(--chip-radius);
@@ -886,6 +890,21 @@ ul { margin: 0; padding: 0; }
 :root[data-personality="glass"] .repo-row:hover { background: rgba(255,255,255,.13); }
 :root[data-personality="glass"] .rr-chip { border-color: rgba(255,255,255,.32); box-shadow: 0 5px 14px rgba(20,8,72,.18); }
 :root[data-personality="glass"] .activity-strip { background: rgba(29,14,93,.4); border-color: rgba(255,255,255,.35); backdrop-filter: blur(15px); }
+
+/* HQ rows are stories, not miniature Git diagrams. All personalities preserve
+   this shared information order while retaining their own surface treatment. */
+:root[data-personality] .repo-row {
+  grid-template-columns: minmax(205px, 270px) minmax(360px, 1fr) minmax(155px, 220px) auto;
+  align-items: start;
+}
+:root[data-personality] .rr-activity { padding-top: 2px; }
+:root[data-personality="scifi"] .rr-story-lines { font-family: var(--font-mono); font-size: 11px; }
+:root[data-personality="jarbas"] .rr-story-lines { color: #9fcbd4; }
+
+@media (max-width: 800px) {
+  :root[data-personality] .repo-row { grid-template-columns: 1fr auto; }
+  :root[data-personality] .rr-story, :root[data-personality] .rr-activity { grid-column: 1 / -1; }
+}
 
 @keyframes scan { to { transform: translateX(100%); } }
 @keyframes nodepulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.55; } }

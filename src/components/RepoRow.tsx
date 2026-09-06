@@ -5,8 +5,8 @@ import type { RepoStatus } from "../fleet";
 import type { RepoView } from "../state/AppState";
 import type { Personality } from "../types";
 import * as api from "../api";
-import { Topology } from "./Topology";
 import { headlineText } from "../personality/topology";
+import { repositoryRowNarrative } from "../narrative";
 
 function stop(e: React.MouseEvent) {
   e.stopPropagation();
@@ -46,8 +46,7 @@ export function RepoRow({
     return () => document.removeEventListener("mousedown", close);
   }, [menu]);
 
-  const wt = s?.workingTree;
-  const showCounts = wt && !wt.clean;
+  const story = s ? repositoryRowNarrative({ state: s, status, lastSuccessfulFetch: repo.lastSuccessfulFetch }, d) : [];
 
   return (
     <div
@@ -62,33 +61,17 @@ export function RepoRow({
     >
       <div className="rr-identity">
         <div className="rr-name">{s?.name ?? repo.path.split("/").pop()}</div>
+        {s?.currentBranch && <div className="rr-branch mono">{s.currentBranch}</div>}
         <div className="rr-path" title={repo.path}>{repo.path}</div>
       </div>
 
-      <div className="rr-state">
+      <div className="rr-story">
         <span className="rr-chip" data-headline={status.headline}>
           {headlineText(p, status.headline, d)}
         </span>
-        {showCounts && (
-          <div className="rr-counts">
-            {wt.conflicted > 0 && <span className="rr-conflict"><b>{wt.conflicted}</b> {d.card.conflicts}</span>}
-            {wt.staged > 0 && <span><b>{wt.staged}</b> {d.card.staged}</span>}
-            {wt.modified > 0 && <span><b>{wt.modified}</b> {d.card.modified}</span>}
-            {wt.deleted > 0 && <span><b>{wt.deleted}</b> {d.card.deleted}</span>}
-            {wt.untracked > 0 && <span><b>{wt.untracked}</b> {d.card.untracked}</span>}
-          </div>
-        )}
-      </div>
-
-      <div className="rr-topo">
-        <Topology
-          status={status}
-          conflicted={wt?.conflicted ?? 0}
-          currentBranch={s?.currentBranch ?? null}
-          d={d}
-          p={p}
-          variant="row"
-        />
+        <div className="rr-story-lines">
+          {story.map((line) => <span key={line}>{line}</span>)}
+        </div>
         {repo.fetchError && <div className="rr-fetch-error">{d.errors.fetchFailed}: {repo.fetchError}</div>}
       </div>
 

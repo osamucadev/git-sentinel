@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { en } from "./i18n/en";
 import { deriveStatus } from "./fleet";
-import { repositoryNarrative, repositoryRowNarrative } from "./narrative";
+import { repositoryNarrative, repositoryRowNarrative, repositoryRowStory } from "./narrative";
 import type { RepositoryState } from "./types";
 
 function state(over: Partial<RepositoryState> = {}): RepositoryState {
@@ -40,26 +40,31 @@ describe("repository narrative", () => {
     expect(lines.join(" ")).toContain("4 new file(s) not yet tracked by Git");
   });
 
-  it("keeps a clean synchronized repository brief and says when remote refs were checked", () => {
+  it("keeps a healthy repository compact with local and upstream signals", () => {
     const repo = state({ currentBranch: "main", referenceBranch: "origin/main", referenceDivergence: null, localDivergence: null, trackingDivergence: { ahead: 0, behind: 0, baseBranch: "origin/main" } });
-    const lines = repositoryRowNarrative({ state: repo, status: deriveStatus({ state: repo, loading: false }), lastSuccessfulFetch: "2026-01-01T00:00:00Z" }, en);
-    expect(lines).toContain("You are on main, with no local changes.");
-    expect(lines).toContain("Synced with origin/feature/a.");
-    expect(lines.join(" ")).toContain("Remote refs checked by Sentinel");
+    const story = repositoryRowStory({ state: repo, status: deriveStatus({ state: repo, loading: false }), lastSuccessfulFetch: "2026-01-01T00:00:00Z" }, en);
+    expect(story.signals).toMatchObject([
+      { dimension: "local", state: "clean", label: "Local clean" },
+      { dimension: "upstream", state: "synced", label: "upstream" },
+    ]);
+    expect(story.summary).toBe("Everything is in order.");
+    expect(story.details.join(" ")).toContain("Remote refs checked by Sentinel");
   });
 
-  it("turns dirty, staged and untracked facts into one readable local-work sentence", () => {
+  it("places local counts in a signal and compact secondary detail", () => {
     const repo = state({ workingTree: { clean: false, staged: 3, modified: 2, deleted: 0, untracked: 4, conflicted: 0 } });
-    const lines = repositoryRowNarrative({ state: repo, status: deriveStatus({ state: repo, loading: false }) }, en);
-    expect(lines.join(" ")).toContain("9 uncommitted local change(s)");
-    expect(lines.join(" ")).toContain("3 prepared for commit");
-    expect(lines.join(" ")).toContain("4 new and untracked");
+    const story = repositoryRowStory({ state: repo, status: deriveStatus({ state: repo, loading: false }) }, en);
+    expect(story.signals[0]).toMatchObject({ dimension: "local", state: "working", label: "9 local change(s)" });
+    expect(story.details.join(" ")).toContain("3 prepared for commit");
+    expect(story.details.join(" ")).toContain("4 new and untracked");
+    expect(story.summary).toBe("1 local commit(s) are not yet in origin/feature/a.");
   });
 
   it("puts conflicts ahead of other working-tree detail", () => {
     const repo = state({ workingTree: { clean: false, staged: 1, modified: 1, deleted: 0, untracked: 0, conflicted: 2 } });
-    const lines = repositoryRowNarrative({ state: repo, status: deriveStatus({ state: repo, loading: false }) }, en);
-    expect(lines).toContain("2 file(s) are conflicted and need resolution.");
+    const story = repositoryRowStory({ state: repo, status: deriveStatus({ state: repo, loading: false }) }, en);
+    expect(story.signals[0].state).toBe("conflict");
+    expect(story.summary).toBe("2 file(s) are conflicted and need resolution.");
   });
 
   it("explains ahead, behind and diverged upstream separately", () => {
@@ -80,9 +85,10 @@ describe("repository narrative", () => {
       referenceDivergence: { ahead: 10, behind: 245, baseBranch: "origin/homolog" },
       trackingDivergence: { ahead: 0, behind: 0, baseBranch: "origin/feature/a" },
     });
-    const lines = repositoryRowNarrative({ state: repo, status: deriveStatus({ state: repo, loading: false }) }, en);
-    expect(lines).toContain("Synced with origin/feature/a.");
-    expect(lines).toContain("Compared with reference origin/homolog: 10 ahead and 245 behind.");
+    const story = repositoryRowStory({ state: repo, status: deriveStatus({ state: repo, loading: false }) }, en);
+    expect(story.signals).toContainEqual(expect.objectContaining({ dimension: "upstream", state: "synced" }));
+    expect(story.signals).toContainEqual(expect.objectContaining({ dimension: "reference", state: "diverged", label: "↑10 ↓245 reference" }));
+    expect(story.summary).toBe("Synced with upstream, but differs from reference origin/homolog.");
   });
 
   it("explains no upstream, unavailable tracking, no remote, and unknown freshness", () => {

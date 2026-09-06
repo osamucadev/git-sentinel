@@ -12,6 +12,20 @@ type NarrativeInput = {
   lastSuccessfulFetch?: string;
 };
 
+export type RowSignal = {
+  dimension: "local" | "upstream" | "reference";
+  state: "clean" | "working" | "conflict" | "synced" | "ahead" | "behind" | "diverged" | "unavailable" | "none";
+  mark: string;
+  label: string;
+  detail?: string;
+};
+
+export type RepositoryRowStory = {
+  signals: RowSignal[];
+  summary: string;
+  details: string[];
+};
+
 function relationLine(
   prefix: "upstream" | "reference",
   ref: string,
@@ -42,15 +56,14 @@ function workingTreeLine(state: RepositoryState, d: Dict): string | null {
 
 function compactWorkingTreeLine(state: RepositoryState, d: Dict): string | null {
   const wt = state.workingTree;
-  if (wt.conflicted > 0) return fill(d.rowNarrative.conflict, { n: wt.conflicted });
+  if (wt.conflicted > 0) return null;
   const facts = [
     wt.staged && fill(d.rowNarrative.staged, { n: wt.staged }),
     wt.modified && fill(d.rowNarrative.modified, { n: wt.modified }),
     wt.deleted && fill(d.rowNarrative.deleted, { n: wt.deleted }),
     wt.untracked && fill(d.rowNarrative.untracked, { n: wt.untracked }),
   ].filter(Boolean).join(d.rowNarrative.join);
-  const total = wt.staged + wt.modified + wt.deleted + wt.untracked;
-  return facts ? fill(d.rowNarrative.workingTree, { total, facts }) : null;
+  return facts || null;
 }
 
 function rowRelation(
@@ -72,42 +85,94 @@ function rowRelation(
   });
 }
 
-/** Compact HQ story: plain language replaces the topology without conflating
- * current branch, its upstream, and the project's configured reference. */
-export function repositoryRowNarrative({ state, status, lastSuccessfulFetch }: NarrativeInput, d: Dict): string[] {
-  const lines: string[] = [];
-  const work = compactWorkingTreeLine(state, d);
-  if (state.currentBranch) {
-    lines.push(state.workingTree.clean
-      ? fill(d.rowNarrative.currentClean, { branch: state.currentBranch })
-      : fill(d.rowNarrative.current, { branch: state.currentBranch }));
-  } else {
-    lines.push(d.rowNarrative.detached);
+function signalRelation(
+  dimension: "upstream" | "reference",
+  ref: string,
+  rel: NonNullable<RepoStatus["reference"]>["rel"],
+  d: Dict,
+): RowSignal {
+  const label = dimension === "upstream" ? d.rowNarrative.upstreamLabel : d.rowNarrative.referenceLabel;
+  const detail = dimension === "reference" ? fill(d.rowNarrative.referenceAgainst, { ref }) : ref;
+  if (rel.kind === "synced") return { dimension, state: "synced", mark: "✓", label, detail };
+  if (rel.kind === "ahead") return { dimension, state: "ahead", mark: "↑", label: `↑${rel.ahead} ${label}`, detail };
+  if (rel.kind === "behind") return { dimension, state: "behind", mark: "↓", label: `↓${rel.behind} ${label}`, detail };
+  return { dimension, state: "diverged", mark: "↕", label: `↑${rel.ahead} ↓${rel.behind} ${label}`, detail };
+}
+
+function rowSummary(state: RepositoryState, status: RepoStatus, d: Dict): string {
+  const wt = state.workingTree;
+  if (wt.conflicted > 0) return fill(d.rowNarrative.conflict, { n: wt.conflicted });
+
+  const upstream = status.upstream;
+  if (upstream?.kind === "unavailable") return fill(d.rowNarrative.trackingUnavailable, { ref: upstream.ref });
+  if (upstream?.kind === "none") return state.remotes.length === 0 ? d.rowNarrative.noRemote : d.rowNarrative.noUpstream;
+  if (upstream?.kind === "tracking") {
+    if (upstream.rel.kind === "ahead") return fill(d.rowNarrative.ahead, { n: upstream.rel.ahead, ref: upstream.ref });
+    if (upstream.rel.kind === "behind") return fill(d.rowNarrative.behind, { n: upstream.rel.behind, ref: upstream.ref });
+    if (upstream.rel.kind === "diverged") return fill(d.rowNarrative.diverged, { ahead: upstream.rel.ahead, behind: upstream.rel.behind, ref: upstream.ref });
   }
-  if (work) lines.push(work);
+
+  if (status.reference && status.reference.rel.kind !== "synced") {
+    if (upstream?.kind === "tracking" && upstream.rel.kind === "synced") {
+      return fill(d.rowNarrative.syncedReferenceDiffers, { ref: status.reference.ref });
+    }
+    const line = rowRelation(status.reference.ref, status.reference.rel, d, true);
+    if (line) return line;
+  }
+
+  if (!state.workingTree.clean) {
+    return upstream?.kind === "tracking" && upstream.rel.kind === "synced"
+      ? d.rowNarrative.localWorkSynced
+      : d.rowNarrative.localWork;
+  }
+  return d.rowNarrative.allClear;
+}
+
+/** Shared semantic presentation for HQ rows. Signals are deliberately facts,
+ * not a Git graph: local work, own upstream, then project reference. */
+export function repositoryRowStory({ state, status, lastSuccessfulFetch }: NarrativeInput, d: Dict): RepositoryRowStory {
+  const wt = state.workingTree;
+  const signals: RowSignal[] = [];
+  const details: string[] = [];
+  const work = compactWorkingTreeLine(state, d);
+  const localTotal = wt.staged + wt.modified + wt.deleted + wt.untracked;
+
+  if (wt.conflicted > 0) {
+    signals.push({ dimension: "local", state: "conflict", mark: "!", label: fill(d.rowNarrative.localConflicts, { n: wt.conflicted }) });
+  } else if (wt.clean) {
+    signals.push({ dimension: "local", state: "clean", mark: "✓", label: d.rowNarrative.localClean });
+  } else {
+    signals.push({ dimension: "local", state: "working", mark: "●", label: fill(d.rowNarrative.localChanges, { n: localTotal }) });
+  }
+  if (work) details.push(work);
 
   const upstream = status.upstream;
   if (upstream?.kind === "tracking") {
-    const line = rowRelation(upstream.ref, upstream.rel, d);
-    if (line) lines.push(line);
+    signals.push(signalRelation("upstream", upstream.ref, upstream.rel, d));
   } else if (upstream?.kind === "unavailable") {
-    lines.push(fill(d.rowNarrative.trackingUnavailable, { ref: upstream.ref }));
-  } else if (state.remotes.length === 0) {
-    lines.push(d.rowNarrative.noRemote);
+    signals.push({ dimension: "upstream", state: "unavailable", mark: "?", label: d.rowNarrative.trackingUnavailableLabel, detail: upstream.ref });
   } else if (upstream?.kind === "none") {
-    lines.push(d.rowNarrative.noUpstream);
+    signals.push({ dimension: "upstream", state: "none", mark: "—", label: d.rowNarrative.noUpstreamLabel });
   }
 
-  if (status.reference) {
-    const line = rowRelation(status.reference.ref, status.reference.rel, d, true);
-    if (line) lines.push(line);
+  if (status.reference && status.reference.rel.kind !== "synced") {
+    signals.push(signalRelation("reference", status.reference.ref, status.reference.rel, d));
   }
+
   if (state.upstream) {
-    lines.push(lastSuccessfulFetch
+    details.push(lastSuccessfulFetch
       ? fill(d.rowNarrative.freshness, { time: relativeTime(lastSuccessfulFetch, d) })
       : d.rowNarrative.freshnessUnknown);
   }
-  return lines;
+
+  return { signals, summary: rowSummary(state, status, d), details };
+}
+
+/** Compact HQ story: plain language replaces the topology without conflating
+ * current branch, its upstream, and the project's configured reference. */
+export function repositoryRowNarrative({ state, status, lastSuccessfulFetch }: NarrativeInput, d: Dict): string[] {
+  const story = repositoryRowStory({ state, status, lastSuccessfulFetch }, d);
+  return [story.summary, ...story.details];
 }
 
 export function repositoryNarrative({ state, status, lastSuccessfulFetch }: NarrativeInput, d: Dict): string[] {

@@ -6,7 +6,7 @@ import type { RepoView } from "../state/AppState";
 import type { Personality } from "../types";
 import * as api from "../api";
 import { headlineText } from "../personality/topology";
-import { repositoryRowNarrative } from "../narrative";
+import { repositoryRowStory } from "../narrative";
 
 function stop(e: React.MouseEvent) {
   e.stopPropagation();
@@ -46,7 +46,7 @@ export function RepoRow({
     return () => document.removeEventListener("mousedown", close);
   }, [menu]);
 
-  const story = s ? repositoryRowNarrative({ state: s, status, lastSuccessfulFetch: repo.lastSuccessfulFetch }, d) : [];
+  const story = s ? repositoryRowStory({ state: s, status, lastSuccessfulFetch: repo.lastSuccessfulFetch }, d) : null;
 
   return (
     <div
@@ -69,9 +69,30 @@ export function RepoRow({
         <span className="rr-chip" data-headline={status.headline}>
           {headlineText(p, status.headline, d)}
         </span>
-        <div className="rr-story-lines">
-          {story.map((line) => <span key={line}>{line}</span>)}
-        </div>
+        {story && (
+          <>
+            <div className="rr-signals" aria-label="Repository state signals">
+              {story.signals.map((signal) => (
+                <span
+                  className="rr-signal"
+                  data-dimension={signal.dimension}
+                  data-state={signal.state}
+                  key={`${signal.dimension}-${signal.label}`}
+                >
+                  <b aria-hidden="true">{signal.mark}</b>
+                  <span>{signal.label}</span>
+                  {signal.detail && <small>{signal.detail}</small>}
+                </span>
+              ))}
+            </div>
+            <p className="rr-story-summary">{story.summary}</p>
+            {story.details.length > 0 && (
+              <div className="rr-story-detail">
+                {story.details.map((detail) => <span key={detail}>{detail}</span>)}
+              </div>
+            )}
+          </>
+        )}
         {repo.fetchError && <div className="rr-fetch-error">{d.errors.fetchFailed}: {repo.fetchError}</div>}
       </div>
 

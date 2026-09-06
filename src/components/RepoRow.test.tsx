@@ -17,10 +17,12 @@ const repo: RepoView = {
 };
 
 describe("RepoRow", () => {
-  it("uses text narrative in HQ and does not render the graphical topology", () => {
+  it("uses semantic signals plus a single interpretation in HQ, not a topology", () => {
     const html = renderToStaticMarkup(<RepoRow repo={repo} status={deriveStatus(repo)} d={en} p="technical" operationsBusy={false} onOpenDetails={() => {}} onRefresh={() => {}} onFetch={() => {}} onRemove={() => {}} />);
-    expect(html).toContain("You are on feature/a, with no local changes.");
-    expect(html).toContain("Synced with origin/feature/a.");
+    expect(html).toContain("rr-signals");
+    expect(html).toContain("Local clean");
+    expect(html).toContain("upstream");
+    expect(html).toContain("Synced with upstream, but differs from reference origin/main.");
     expect(html).not.toContain("topo-");
   });
 });

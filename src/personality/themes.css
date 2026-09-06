@@ -327,9 +327,29 @@ code, .mono { font-family: var(--font-mono); }
 
 .rr-state { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
 .rr-branch { margin-top: 3px; color: var(--text); font-size: 12px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.rr-story { min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 6px; }
-.rr-story-lines { display: flex; flex-direction: column; gap: 3px; min-width: 0; font-size: 12px; line-height: 1.42; color: var(--text-dim); }
-.rr-story-lines span { overflow-wrap: anywhere; }
+.rr-story { min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 5px; }
+.rr-signals { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; min-width: 0; }
+.rr-signal {
+  display: inline-flex; align-items: baseline; gap: 4px; min-width: 0;
+  padding: 2px 6px; border: 1px solid var(--border); border-radius: 3px;
+  color: var(--text-dim); font-size: 11px; line-height: 1.25; white-space: nowrap;
+}
+.rr-signal b { color: var(--accent); font-size: 12px; line-height: 1; }
+.rr-signal small { color: var(--text-dim); font: inherit; opacity: .82; }
+.rr-signal[data-state="clean"], .rr-signal[data-state="synced"] { border-color: color-mix(in srgb, var(--clean) 42%, var(--border)); }
+.rr-signal[data-state="clean"] b, .rr-signal[data-state="synced"] b { color: var(--clean); }
+.rr-signal[data-state="working"] { border-color: color-mix(in srgb, var(--dirty) 48%, var(--border)); }
+.rr-signal[data-state="working"] b { color: var(--dirty); }
+.rr-signal[data-state="ahead"] { border-color: color-mix(in srgb, var(--ahead) 48%, var(--border)); }
+.rr-signal[data-state="ahead"] b { color: var(--ahead); }
+.rr-signal[data-state="behind"], .rr-signal[data-state="diverged"] { border-color: color-mix(in srgb, var(--behind) 48%, var(--border)); }
+.rr-signal[data-state="behind"] b, .rr-signal[data-state="diverged"] b { color: var(--behind); }
+.rr-signal[data-state="conflict"], .rr-signal[data-state="unavailable"] { border-color: color-mix(in srgb, var(--danger) 52%, var(--border)); }
+.rr-signal[data-state="conflict"] b, .rr-signal[data-state="unavailable"] b { color: var(--danger); }
+.rr-story-summary { margin: 0; max-width: 100%; color: var(--text); font-size: 12px; line-height: 1.35; overflow-wrap: anywhere; }
+.rr-story-detail { display: flex; flex-wrap: wrap; gap: 2px 0; min-width: 0; color: var(--text-dim); font-size: 11px; line-height: 1.32; }
+.rr-story-detail span { overflow-wrap: anywhere; }
+.rr-story-detail span + span::before { content: "·"; margin: 0 6px; color: var(--border); }
 .rr-chip {
   align-self: flex-start;
   font-size: 11px; padding: 2px 8px; border-radius: var(--chip-radius);
@@ -905,8 +925,27 @@ ul { margin: 0; padding: 0; }
   align-items: start;
 }
 :root[data-personality] .rr-activity { padding-top: 2px; }
-:root[data-personality="scifi"] .rr-story-lines { font-family: var(--font-mono); font-size: 11px; }
-:root[data-personality="jarbas"] .rr-story-lines { color: #9fcbd4; }
+:root[data-personality="technical"] .rr-signal { border-radius: 2px; }
+:root[data-personality="technical"] .rr-story-summary { font-weight: 500; }
+
+:root[data-personality="cute"] .rr-signal { border-radius: 999px; padding: 3px 8px; }
+:root[data-personality="cute"] .rr-story-summary { color: color-mix(in srgb, var(--text) 82%, var(--accent)); }
+
+:root[data-personality="scifi"] .rr-signal {
+  border-radius: 0; font-family: var(--font-mono); letter-spacing: .02em;
+  background: color-mix(in srgb, var(--surface-2) 72%, transparent);
+}
+:root[data-personality="scifi"] .rr-signal b { text-shadow: 0 0 6px currentColor; }
+:root[data-personality="scifi"] .rr-story-summary { font-family: var(--font-mono); font-size: 11px; }
+
+:root[data-personality="jarbas"] .rr-signal {
+  border-radius: 999px; padding: 3px 8px;
+  background: color-mix(in srgb, var(--surface-2) 66%, transparent);
+  border-color: color-mix(in srgb, var(--border) 80%, #d8b77d);
+}
+:root[data-personality="jarbas"] .rr-signal b { text-shadow: none; }
+:root[data-personality="jarbas"] .rr-story-summary { color: #c9d7d9; font-family: var(--font-body); }
+:root[data-personality="jarbas"] .rr-story-detail { color: #8ca5a9; }
 
 @media (max-width: 800px) {
   :root[data-personality] .repo-row { grid-template-columns: 1fr auto; }

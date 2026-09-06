@@ -754,6 +754,8 @@ ul { margin: 0; padding: 0; }
 :root[data-personality="scifi"] .activity-strip { border: 2px solid #23eff2; border-left-color: #a85cff; background: #102f47; box-shadow: 5px 5px 0 rgba(58, 16, 109, 0.55); }
 :root[data-personality="scifi"] .activity-progress { height: 7px; background: #0c2639; border: 1px solid #a85cff; }
 :root[data-personality="scifi"] .activity-progress i { background: repeating-linear-gradient(90deg, #23eff2 0 8px, #4cf277 8px 12px, #12334a 12px 14px); }
+:root[data-personality="scifi"] select { color-scheme: dark; color: #e7fbff; background: #102f47; border-color: #23eff2; }
+:root[data-personality="scifi"] select option { color: #e7fbff; background: #102f47; }
 
 /* Jarbas — an executive command center: deep blue, fine telemetry and calm glow. */
 :root[data-personality="jarbas"] {
@@ -801,6 +803,8 @@ ul { margin: 0; padding: 0; }
 :root[data-personality="jarbas"] .topo-pivot { font-family: var(--font-mono); font-size: 13px; }
 :root[data-personality="jarbas"] .group-head { letter-spacing: 0.14em; color: #71dbe7; }
 :root[data-personality="jarbas"] .group-head::after { background: linear-gradient(90deg, #207e91, transparent); }
+:root[data-personality="jarbas"] select { color-scheme: dark; color: #def8ff; background: #0a2030; border-color: #2a7790; }
+:root[data-personality="jarbas"] select option { color: #def8ff; background: #0a2030; }
 
 /* Retro — printed paper, ink ribbons and tactile, slightly imperfect frames. */
 :root[data-personality="retro"] {
@@ -890,6 +894,8 @@ ul { margin: 0; padding: 0; }
 :root[data-personality="glass"] .repo-row:hover { background: rgba(255,255,255,.13); }
 :root[data-personality="glass"] .rr-chip { border-color: rgba(255,255,255,.32); box-shadow: 0 5px 14px rgba(20,8,72,.18); }
 :root[data-personality="glass"] .activity-strip { background: rgba(29,14,93,.4); border-color: rgba(255,255,255,.35); backdrop-filter: blur(15px); }
+:root[data-personality="glass"] select { color-scheme: dark; color: #f5f3ff; background: #38227f; border-color: rgba(255,255,255,.46); }
+:root[data-personality="glass"] select option { color: #f5f3ff; background: #38227f; }
 
 /* HQ rows are stories, not miniature Git diagrams. All personalities preserve
    this shared information order while retaining their own surface treatment. */

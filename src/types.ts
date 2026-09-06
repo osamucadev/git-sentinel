@@ -39,7 +39,7 @@ export type RepositoryState = {
   trackingDivergence: Divergence | null;
 };
 
-export type Personality = "technical" | "cute" | "scifi" | "jarbas";
+export type Personality = "technical" | "cute" | "scifi" | "jarbas" | "retro" | "lineart" | "pixel" | "glass";
 export type Language = "en" | "pt-BR" | "es";
 
 // Sentinel-only persisted settings. Never holds Git state.

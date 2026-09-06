@@ -47,6 +47,22 @@ export const es: Dict = {
       name: "Jarbas",
       description: "Un asistente personal refinado para tus repositorios.",
     },
+    retro: {
+      name: "Retro",
+      description: "Cálido, táctil y organizado de forma clásica.",
+    },
+    lineart: {
+      name: "Line Art",
+      description: "Ligero, gráfico y organizado con líneas claras.",
+    },
+    pixel: {
+      name: "Pixel Art",
+      description: "Ventanas 8-bit divertidas con datos Git precisos.",
+    },
+    glass: {
+      name: "Modern Glass",
+      description: "Profundidad neón suave y paneles translúcidos.",
+    },
   },
   hq: {
     subtitle: "¿Qué está pasando en tus repositorios locales?",

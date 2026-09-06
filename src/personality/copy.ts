@@ -39,6 +39,11 @@ export function personaGreeting(p: Personality, d: Dict, o: GreetingOpts): strin
       const who = address || name;
       return who ? `${word}, ${who}.` : `${word}.`;
     }
+    case "retro":
+    case "lineart":
+    case "pixel":
+    case "glass":
+      return name ? `${word}, ${name}.` : `${word}.`;
   }
 }
 
@@ -77,6 +82,11 @@ export function personaFleet(p: Personality, d: Dict, o: FleetOpts): { line: str
         detail: named.length > 0 ? `${named.join(". ")}.` : undefined,
       };
     }
+    case "retro":
+    case "lineart":
+    case "pixel":
+    case "glass":
+      return { line: n === 0 ? d.hq.allClear : base };
   }
 }
 
@@ -111,5 +121,10 @@ export function personaStatus(p: Personality, d: Dict, o: StatusOpts): string {
       return o.dirty > 0
         ? `${repos}, ${dirty}.`
         : `${repos}, ${d.card.clean.toLowerCase()}.`;
+    case "retro":
+    case "lineart":
+    case "pixel":
+    case "glass":
+      return o.dirty > 0 ? `${repos} · ${dirty}` : repos;
   }
 }

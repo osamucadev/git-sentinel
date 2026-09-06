@@ -37,6 +37,22 @@ const GLYPHS: Record<Personality, Glyphs> = {
     you: "◆", ref: "•", fork: "◦", detached: "◦", unavailable: "—",
     synced: "✓", dirty: "·", conflict: "!", ahead: "↑", behind: "↓",
   },
+  retro: {
+    you: "◆", ref: "•", fork: "◇", detached: "○", unavailable: "×",
+    synced: "✓", dirty: "✎", conflict: "!", ahead: "↑", behind: "↓",
+  },
+  lineart: {
+    you: "●", ref: "○", fork: "◇", detached: "◌", unavailable: "×",
+    synced: "✓", dirty: "✎", conflict: "!", ahead: "↑", behind: "↓",
+  },
+  pixel: {
+    you: "◆", ref: "■", fork: "◇", detached: "○", unavailable: "×",
+    synced: "✓", dirty: "✎", conflict: "!", ahead: "↑", behind: "↓",
+  },
+  glass: {
+    you: "●", ref: "◦", fork: "◇", detached: "◌", unavailable: "×",
+    synced: "✓", dirty: "✎", conflict: "!", ahead: "↑", behind: "↓",
+  },
 };
 
 export function glyphs(p: Personality): Glyphs {

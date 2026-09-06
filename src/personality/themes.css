@@ -687,89 +687,205 @@ ul { margin: 0; padding: 0; }
 :root[data-personality="cute"] .topo-node-you { transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1); }
 :root[data-personality="cute"] .repo-row:hover .topo-node-you { transform: scale(1.22); }
 
-/* Sci-Fi — an understated command center built from rails, signals and mono type. */
+/* Sci-Fi — a readable HUD: instrument frames, signal colors and angular modules. */
 :root[data-personality="scifi"] {
-  --bg: #050a10;
-  --surface: #09131d;
-  --surface-2: #0c1a27;
-  --border: #153347;
-  --border-strong: #1b5974;
-  --text: #d9f7ff;
-  --text-dim: #719ab0;
-  --accent: #19d7e8;
-  --accent-weak: #082f3b;
-  --radius: 2px;
-  --radius-lg: 4px;
+  --bg: #103d59;
+  --surface: #12334a;
+  --surface-2: #17445e;
+  --border: #197e9a;
+  --border-strong: #21e9ec;
+  --text: #e7fbff;
+  --text-dim: #9bc9d8;
+  --accent: #23eff2;
+  --accent-weak: #124c62;
+  --clean: #4cf277;
+  --dirty: #ffce3f;
+  --ahead: #a85cff;
+  --behind: #ff61df;
+  --danger: #ff6b83;
+  --radius: 0;
+  --radius-lg: 0;
   --row-pad-y: 10px;
-  --topo-line: 1px solid color-mix(in srgb, var(--accent) 78%, transparent);
+  --topo-line: 2px solid color-mix(in srgb, var(--accent) 90%, transparent);
+  --glow: 0 0 7px rgba(35, 239, 242, 0.36);
 }
-:root[data-personality="scifi"] body { background-image: linear-gradient(rgba(24, 119, 145, 0.045) 1px, transparent 1px), linear-gradient(90deg, rgba(24, 119, 145, 0.035) 1px, transparent 1px); background-size: 32px 32px; }
-:root[data-personality="scifi"] .topbar { padding: 13px 24px; border-bottom-color: #1c526b; background: rgba(5, 13, 21, 0.96); }
-:root[data-personality="scifi"] .brand-mark { width: 25px; height: 25px; border: 1px solid var(--accent); clip-path: polygon(50% 0, 100% 28%, 82% 100%, 18% 100%, 0 28%); font-size: 11px; text-shadow: var(--glow); }
+:root[data-personality="scifi"] body { background-image: linear-gradient(rgba(201, 116, 255, 0.11) 1px, transparent 1px), linear-gradient(90deg, rgba(35, 239, 242, 0.09) 1px, transparent 1px); background-size: 12px 12px; }
+:root[data-personality="scifi"] .topbar { padding: 12px 24px; border-bottom: 2px solid #a85cff; background: #0d2d46; box-shadow: inset 0 -5px 0 rgba(35, 239, 242, 0.08); }
+:root[data-personality="scifi"] .topbar::before { content: ""; position: absolute; left: 0; bottom: -2px; width: 156px; height: 2px; background: #4cf277; box-shadow: 168px 0 0 #ffce3f; }
+:root[data-personality="scifi"] .brand-mark { width: 29px; height: 29px; border: 2px solid #a85cff; clip-path: polygon(0 0, 70% 0, 100% 32%, 100% 100%, 0 100%); font-size: 11px; text-shadow: var(--glow); background: #183650; }
+:root[data-personality="scifi"] .topbar .brand h1 { color: #f0fbff; text-shadow: 2px 0 #a85cff; }
+:root[data-personality="scifi"] .topbar .actions .ghost { border-color: transparent; color: #9fefff; }
 :root[data-personality="scifi"] .content.hq { max-width: 1540px; }
-:root[data-personality="scifi"] .hq-head { padding: 18px 24px 16px; border: 1px solid #1a5871; background: linear-gradient(90deg, rgba(9, 27, 39, 0.92), rgba(5, 15, 23, 0.55)); box-shadow: inset 3px 0 0 var(--accent), 0 0 28px rgba(25, 215, 232, 0.05); }
-:root[data-personality="scifi"] .hq-head::after { content: ""; position: absolute; right: 20px; top: 16px; width: 44px; height: 16px; background: radial-gradient(circle, var(--accent) 1px, transparent 2px) 0 50% / 14px 14px repeat-x; opacity: 0.72; }
-:root[data-personality="scifi"] .hq-head .hello { font-size: 20px; color: var(--accent); }
+:root[data-personality="scifi"] .hq-head { padding: 19px 92px 18px 24px; border: 2px solid #23eff2; border-left-color: #a85cff; background: linear-gradient(135deg, #102d47 0 72%, #193f57 72%); clip-path: polygon(0 0, calc(100% - 22px) 0, 100% 22px, 100% 100%, 0 100%); box-shadow: 7px 7px 0 rgba(58, 16, 109, 0.62), inset 0 0 0 2px rgba(168, 92, 255, 0.22); }
+:root[data-personality="scifi"] .hq-head::before { content: ""; position: absolute; right: 22px; top: 20px; width: 42px; height: 42px; border: 2px solid #ffce3f; border-radius: 50%; box-shadow: inset 0 0 0 7px #102d47, 0 0 0 5px rgba(255, 206, 63, 0.13); }
+:root[data-personality="scifi"] .hq-head::after { content: ""; position: absolute; right: 36px; top: 34px; width: 14px; height: 14px; border: 2px solid #23eff2; transform: rotate(45deg); box-shadow: 0 0 0 5px rgba(35, 239, 242, 0.1); }
+:root[data-personality="scifi"] .hq-head .hello { font-size: 20px; color: var(--accent); text-shadow: 2px 0 #a85cff; }
 :root[data-personality="scifi"] .hq-interpretation { font-family: var(--font-mono); }
-:root[data-personality="scifi"] .hq-summary { border-top: 1px solid rgba(25, 215, 232, 0.18); padding-top: 8px; }
-:root[data-personality="scifi"] .chip-filter { border-radius: 1px; font-family: var(--font-mono); padding: 4px 10px; }
-:root[data-personality="scifi"] .repo-list { border-color: #1a536b; border-radius: 2px; box-shadow: 0 0 22px rgba(5, 180, 220, 0.045); }
+:root[data-personality="scifi"] .hq-summary { border-top: 1px solid rgba(35, 239, 242, 0.42); padding-top: 8px; }
+:root[data-personality="scifi"] .chip-filter, :root[data-personality="scifi"] button { border-radius: 0; font-family: var(--font-mono); }
+:root[data-personality="scifi"] .chip-filter { padding: 4px 10px; border-color: #337e9b; }
+:root[data-personality="scifi"] .chip-filter.on { border-color: #ffce3f; color: #ffdf6b; box-shadow: 3px 3px 0 rgba(168, 92, 255, 0.5); }
+:root[data-personality="scifi"] button.primary { background: #23eff2; border-color: #23eff2; box-shadow: 3px 3px 0 #a85cff; }
+:root[data-personality="scifi"] .repo-list { border: 2px solid #23eff2; border-left-color: #a85cff; border-radius: 0; box-shadow: 6px 6px 0 rgba(58, 16, 109, 0.58); }
 :root[data-personality="scifi"] .repo-row { grid-template-columns: minmax(190px, 250px) 150px minmax(360px, 1fr) minmax(155px, 215px) auto; gap: 15px; }
-:root[data-personality="scifi"] .repo-row:hover { background: #0b1d2a; }
+:root[data-personality="scifi"] .repo-row:hover { background: #17445e; }
 :root[data-personality="scifi"] .rr-name { color: #effcff; }
-:root[data-personality="scifi"] .rr-name::before { content: "▰"; color: var(--accent); margin-right: 7px; font-size: 10px; }
-:root[data-personality="scifi"] .rr-chip { border: 1px solid currentColor; border-radius: 1px; background: transparent !important; }
+:root[data-personality="scifi"] .rr-name::before { content: "▰"; color: #4cf277; margin-right: 7px; font-size: 10px; text-shadow: 0 0 6px #4cf277; }
+:root[data-personality="scifi"] .rr-chip { border: 1px solid currentColor; border-radius: 0; background: #0e3048 !important; box-shadow: 3px 3px 0 rgba(168, 92, 255, 0.35); }
+:root[data-personality="scifi"] .repo-row[data-tier="blocked"] { box-shadow: inset 4px 0 0 var(--danger); }
+:root[data-personality="scifi"] .repo-row[data-tier="attention"], :root[data-personality="scifi"] .repo-row[data-tier="working"] { box-shadow: inset 4px 0 0 #ffce3f; }
+:root[data-personality="scifi"] .repo-row[data-tier="ahead"] { box-shadow: inset 4px 0 0 #a85cff; }
 :root[data-personality="scifi"] .topo-spine { --topo-label-width: 176px; --topo-track-width: 196px; --topo-pivot-offset: 98px; }
-:root[data-personality="scifi"] .topo-pivot { color: #f1feff; text-shadow: var(--glow); }
-:root[data-personality="scifi"] .topo-node-ref { color: #5da8c7; }
+:root[data-personality="scifi"] .topo-pivot { color: #f1feff; text-shadow: var(--glow), 2px 0 #a85cff; }
+:root[data-personality="scifi"] .topo-node-ref, :root[data-personality="scifi"] .topo-rail-reference .topo-rail-kind { color: #a85cff; }
+:root[data-personality="scifi"] .topo-rail-upstream .topo-rail-kind { color: #ffce3f; }
+:root[data-personality="scifi"] .topo-rail-upstream .topo-rail-verdict { color: #ffdf6b; }
 :root[data-personality="scifi"] .topo-node-you { animation: nodepulse 3s ease-in-out infinite; }
-:root[data-personality="scifi"] .group-title::before { content: "// "; opacity: 0.6; }
-:root[data-personality="scifi"] .group-head { border-bottom: 1px solid rgba(25, 215, 232, 0.16); padding-bottom: 4px; }
-:root[data-personality="scifi"] .repo-row { position: relative; overflow: hidden; }
+:root[data-personality="scifi"] .group-title::before { content: "▸ "; color: #a85cff; opacity: 1; }
+:root[data-personality="scifi"] .group-head { border-bottom: 2px solid rgba(35, 239, 242, 0.42); padding: 0 0 4px 8px; }
+:root[data-personality="scifi"] .group-count { border: 1px solid #a85cff; color: #f3c2ff; padding: 0 5px; }
+:root[data-personality="scifi"] .repo-row { position: relative; overflow: visible; }
 :root[data-personality="scifi"] .repo-row::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--accent) 10%, transparent), transparent); transform: translateX(-100%); }
 :root[data-personality="scifi"] .repo-row:hover::after { animation: scan 0.8s ease-out; }
+:root[data-personality="scifi"] .activity-strip { border: 2px solid #23eff2; border-left-color: #a85cff; background: #102f47; box-shadow: 5px 5px 0 rgba(58, 16, 109, 0.55); }
+:root[data-personality="scifi"] .activity-progress { height: 7px; background: #0c2639; border: 1px solid #a85cff; }
+:root[data-personality="scifi"] .activity-progress i { background: repeating-linear-gradient(90deg, #23eff2 0 8px, #4cf277 8px 12px, #12334a 12px 14px); }
 
-/* Jarbas — calm editorial hierarchy over precise technical data. */
+/* Jarbas — an executive command center: deep blue, fine telemetry and calm glow. */
 :root[data-personality="jarbas"] {
-  --bg: #161510;
-  --surface: #1d1b15;
-  --surface-2: #28231a;
-  --border: #403725;
-  --border-strong: #5f5034;
-  --text: #f3ead9;
-  --text-dim: #b5a88e;
-  --accent: #d6ad62;
-  --accent-weak: #322717;
-  --radius: 7px;
-  --radius-lg: 12px;
-  --row-pad-y: 13px;
+  --bg: #061521;
+  --surface: #0a2030;
+  --surface-2: #0d2b3f;
+  --border: #17455b;
+  --border-strong: #2a7790;
+  --text: #def8ff;
+  --text-dim: #77aab8;
+  --accent: #22d9e8;
+  --accent-weak: #103a4b;
+  --clean: #31e6a4;
+  --dirty: #f3bd48;
+  --ahead: #5a9dff;
+  --behind: #c46df3;
+  --radius: 5px;
+  --radius-lg: 7px;
+  --row-pad-y: 11px;
+  --font-display: var(--font-mono);
   --topo-line: 1px solid color-mix(in srgb, var(--accent) 78%, var(--border));
 }
-:root[data-personality="jarbas"] body { background-image: radial-gradient(circle at 84% 12%, rgba(183, 138, 61, 0.09), transparent 26%), linear-gradient(135deg, rgba(255,255,255,0.012) 25%, transparent 25%); }
-:root[data-personality="jarbas"] .topbar { padding: 15px 28px; background: rgba(22, 21, 16, 0.94); border-bottom-color: #50432d; }
-:root[data-personality="jarbas"] .brand-mark { font-size: 15px; color: var(--accent); }
-:root[data-personality="jarbas"] .topbar .brand h1 { font-family: var(--font-display); font-size: 18px; }
+:root[data-personality="jarbas"] body { background-image: radial-gradient(circle at 60% 0, rgba(29, 191, 221, 0.1), transparent 26%), radial-gradient(#2d7790 1px, transparent 1px); background-size: auto, 17px 17px; }
+:root[data-personality="jarbas"] .topbar { padding: 14px 28px; background: rgba(5, 19, 30, 0.94); border-bottom-color: #1f6c83; box-shadow: 0 4px 22px rgba(0,0,0,0.26); }
+:root[data-personality="jarbas"] .brand-mark { width: 26px; height: 26px; border: 1px solid var(--accent); border-radius: 50%; font-size: 10px; color: var(--accent); box-shadow: 0 0 0 5px rgba(34,217,232,0.08), 0 0 14px rgba(34,217,232,0.32); }
+:root[data-personality="jarbas"] .topbar .brand h1 { font-family: var(--font-mono); font-size: 18px; letter-spacing: .2em; }
 :root[data-personality="jarbas"] .content.hq { max-width: 1460px; }
-:root[data-personality="jarbas"] .hq-head { padding: 22px 230px 20px 24px; border-bottom: 1px solid #5a4a30; }
-:root[data-personality="jarbas"] .hq-presence { display: flex; position: absolute; right: 32px; top: 26px; width: 150px; justify-content: center; gap: 10px; }
-:root[data-personality="jarbas"] .hq-presence::before, :root[data-personality="jarbas"] .hq-presence::after { content: ""; width: 40px; height: 1px; background: linear-gradient(90deg, transparent, var(--accent)); align-self: center; }
-:root[data-personality="jarbas"] .hq-presence::after { transform: scaleX(-1); }
-:root[data-personality="jarbas"] .hq-presence i { width: 6px; height: 6px; border: 1px solid var(--accent); transform: rotate(45deg); }
-:root[data-personality="jarbas"] .hq-head .hello { font-size: 29px; font-weight: 500; }
-:root[data-personality="jarbas"] .hq-interpretation { font-family: var(--font-display); font-size: 16px; }
+:root[data-personality="jarbas"] .hq-head { padding: 21px 185px 20px 22px; border: 1px solid #1c6078; background: linear-gradient(90deg, rgba(8,32,48,.94), rgba(9,30,45,.58)); box-shadow: inset 0 0 0 1px rgba(34,217,232,.08), 0 10px 30px rgba(0,0,0,.22); }
+:root[data-personality="jarbas"] .hq-presence { display: flex; position: absolute; right: 36px; top: 27px; width: 96px; height: 96px; justify-content: center; align-items: center; gap: 0; border: 1px solid #28bdd0; border-radius: 50%; box-shadow: inset 0 0 0 12px rgba(34,217,232,.04), 0 0 18px rgba(34,217,232,.14); }
+:root[data-personality="jarbas"] .hq-presence::before, :root[data-personality="jarbas"] .hq-presence::after { content: ""; position: absolute; width: 120px; height: 1px; background: linear-gradient(90deg, transparent, var(--accent), transparent); }
+:root[data-personality="jarbas"] .hq-presence::after { transform: rotate(90deg); }
+:root[data-personality="jarbas"] .hq-presence i { width: 7px; height: 7px; margin: 0 4px; border: 1px solid var(--accent); border-radius: 50%; box-shadow: 0 0 7px var(--accent); }
+:root[data-personality="jarbas"] .hq-head .hello { font-size: 24px; font-weight: 600; color: #74f4ff; text-shadow: 0 0 13px rgba(34,217,232,.45); }
+:root[data-personality="jarbas"] .hq-interpretation { font-family: var(--font-mono); font-size: 14px; }
 :root[data-personality="jarbas"] .hq-interpretation-detail { max-width: 700px; line-height: 1.65; }
-:root[data-personality="jarbas"] .hq-summary { color: #c3b28e; }
-:root[data-personality="jarbas"] .chip-filter { border-radius: 999px; padding: 4px 11px; }
-:root[data-personality="jarbas"] .repo-list { border-radius: 10px; background: linear-gradient(135deg, rgba(255,255,255,0.018), transparent 55%), var(--surface); box-shadow: 0 14px 35px rgba(0,0,0,0.18); }
+:root[data-personality="jarbas"] .hq-summary { color: #9ed4dd; }
+:root[data-personality="jarbas"] .chip-filter { border-radius: 4px; padding: 4px 11px; }
+:root[data-personality="jarbas"] .repo-list { border-radius: 6px; background: linear-gradient(135deg, rgba(34,217,232,.035), transparent 55%), var(--surface); box-shadow: 0 14px 35px rgba(0,0,0,0.22); }
 :root[data-personality="jarbas"] .repo-row { grid-template-columns: minmax(200px, 255px) 145px minmax(340px, 1fr) minmax(160px, 220px) auto; gap: 17px; }
-:root[data-personality="jarbas"] .repo-row:hover { background: #272218; }
-:root[data-personality="jarbas"] .rr-name { font-family: var(--font-display); font-size: 15px; font-weight: 600; }
-:root[data-personality="jarbas"] .rr-name::before { content: "◆"; color: var(--accent); margin-right: 7px; font-size: 8px; vertical-align: 2px; }
-:root[data-personality="jarbas"] .rr-chip { border-radius: 4px; font-family: var(--font-display); font-weight: 600; }
+:root[data-personality="jarbas"] .repo-row:hover { background: #0e2c3e; }
+:root[data-personality="jarbas"] .rr-name { font-family: var(--font-mono); font-size: 14px; font-weight: 600; }
+:root[data-personality="jarbas"] .rr-name::before { content: "◈"; color: var(--accent); margin-right: 7px; font-size: 10px; text-shadow: 0 0 7px var(--accent); }
+:root[data-personality="jarbas"] .rr-chip { border-radius: 3px; font-family: var(--font-mono); font-weight: 600; }
 :root[data-personality="jarbas"] .topo-spine { --topo-label-width: 178px; --topo-track-width: 188px; --topo-pivot-offset: 94px; }
-:root[data-personality="jarbas"] .topo-pivot { font-family: var(--font-display); font-size: 13px; }
-:root[data-personality="jarbas"] .group-head { letter-spacing: 0.14em; color: #c5ae7a; }
-:root[data-personality="jarbas"] .group-head::after { background: linear-gradient(90deg, #5a492e, transparent); }
+:root[data-personality="jarbas"] .topo-pivot { font-family: var(--font-mono); font-size: 13px; }
+:root[data-personality="jarbas"] .group-head { letter-spacing: 0.14em; color: #71dbe7; }
+:root[data-personality="jarbas"] .group-head::after { background: linear-gradient(90deg, #207e91, transparent); }
+
+/* Retro — printed paper, ink ribbons and tactile, slightly imperfect frames. */
+:root[data-personality="retro"] {
+  --bg: #f4eee5; --surface: #fffaf2; --surface-2: #e7d9c4; --border: #bfae98; --border-strong: #74615a;
+  --text: #403632; --text-dim: #816f63; --accent: #6b5148; --accent-weak: #e1d2be; --on-accent: #fff9f0;
+  --clean: #63866b; --dirty: #b57b42; --ahead: #7f6a9a; --behind: #b36b70; --danger: #ae5050;
+  --radius: 3px; --radius-lg: 5px; --font-display: Georgia, "Times New Roman", serif; --row-pad-y: 12px;
+}
+:root[data-personality="retro"] body { background-image: radial-gradient(rgba(78,57,45,.12) .7px, transparent .7px); background-size: 5px 5px; }
+:root[data-personality="retro"] .topbar { background: rgba(255,250,242,.93); border-bottom: 4px double #6b5148; }
+:root[data-personality="retro"] .brand-mark { color: #fff9f0; background: #6b5148; width: 24px; height: 24px; clip-path: polygon(8% 0,92% 0,100% 50%,92% 100%,8% 100%,0 50%); font-size: 10px; }
+:root[data-personality="retro"] .hq-head { padding: 18px 24px; text-align: center; border-top: 9px solid #6b5148; border-bottom: 9px solid #6b5148; background: #e1d2be; box-shadow: inset 0 0 0 3px #f8f1e7; }
+:root[data-personality="retro"] .hq-head .hello { font-size: 28px; color: #4b3d38; }
+:root[data-personality="retro"] .hq-head .hello::after { content: " ✦"; color: #a77c57; }
+:root[data-personality="retro"] .hq-tools { background: rgba(255,250,242,.62); padding: 9px; border: 1px solid #bfae98; }
+:root[data-personality="retro"] .chip-filter { border-radius: 0; border-style: dashed; }
+:root[data-personality="retro"] button.primary { background: #6b5148; border-color: #6b5148; box-shadow: 3px 3px 0 #c4ae92; }
+:root[data-personality="retro"] .group-head { color: #71574e; letter-spacing: .12em; }
+:root[data-personality="retro"] .group-title::before { content: "★ "; }
+:root[data-personality="retro"] .repo-list { border: 2px solid #88756a; border-radius: 0; box-shadow: 4px 4px 0 #d0c0aa; }
+:root[data-personality="retro"] .repo-row { background: rgba(255,250,242,.84); }
+:root[data-personality="retro"] .repo-row:hover { background: #efe3d1; }
+:root[data-personality="retro"] .rr-name { font-family: Georgia, serif; text-transform: none; letter-spacing: .01em; }
+:root[data-personality="retro"] .rr-name::before { content: "✦"; color: #a77c57; margin-right: 6px; }
+:root[data-personality="retro"] .rr-chip { border-radius: 0; font-family: Georgia, serif; }
+
+/* Line Art — clean editorial line work with navy, blue and teal geometry. */
+:root[data-personality="lineart"] {
+  --bg: #fffefd; --surface: #ffffff; --surface-2: #f1f6fb; --border: #afc0cf; --border-strong: #0b1b4e;
+  --text: #0b1b4e; --text-dim: #607889; --accent: #3978bb; --accent-weak: #dceafd; --on-accent: #fff;
+  --clean: #2fb49f; --dirty: #d5963d; --ahead: #3978bb; --behind: #c4668d; --danger: #c65363;
+  --radius: 0; --radius-lg: 0; --row-pad-y: 12px;
+}
+:root[data-personality="lineart"] body { background-image: linear-gradient(135deg, transparent 48%, rgba(11,27,78,.12) 49% 51%, transparent 52%); background-size: 52px 52px; background-position: right -18px top -18px; background-repeat: no-repeat; }
+:root[data-personality="lineart"] .topbar { border-bottom: 2px solid #0b1b4e; background: #fff; }
+:root[data-personality="lineart"] .brand-mark { width: 27px; height: 27px; border: 2px solid #0b1b4e; border-radius: 50%; color: #3978bb; }
+:root[data-personality="lineart"] .hq-head { padding: 22px 190px 20px 22px; border: 2px solid #0b1b4e; background: linear-gradient(90deg, #fff 0 72%, #dceafd 72%); }
+:root[data-personality="lineart"] .hq-head::after { content: ""; position: absolute; right: 45px; top: 26px; width: 76px; height: 76px; border: 3px solid #2fb49f; border-radius: 50%; box-shadow: -16px 16px 0 -10px #3978bb; }
+:root[data-personality="lineart"] .hq-head .hello { color: #0b1b4e; font-size: 25px; }
+:root[data-personality="lineart"] .chip-filter, :root[data-personality="lineart"] button { border-radius: 0; }
+:root[data-personality="lineart"] .chip-filter.on { background: #dceafd; border-color: #0b1b4e; }
+:root[data-personality="lineart"] .repo-list { border: 2px solid #0b1b4e; border-radius: 0; }
+:root[data-personality="lineart"] .repo-row { border-bottom-color: #afc0cf; }
+:root[data-personality="lineart"] .repo-row:hover { background: #edf7fb; }
+:root[data-personality="lineart"] .rr-name::before { content: "●"; color: #2fb49f; margin-right: 7px; }
+:root[data-personality="lineart"] .rr-chip { border: 1px solid currentColor; border-radius: 0; }
+:root[data-personality="lineart"] .topo-node-you { color: #3978bb; }
+
+/* Pixel Art — crisp 8-bit windows, pastel grid and no anti-aliased ornament. */
+:root[data-personality="pixel"] {
+  --bg: #d9f6fb; --surface: #fffef0; --surface-2: #f8ddf0; --border: #1974dc; --border-strong: #0860ce;
+  --text: #0757be; --text-dim: #557ca8; --accent: #1476e8; --accent-weak: #c3eff7; --on-accent: #fffef0;
+  --clean: #65bd42; --dirty: #e4bd38; --ahead: #de64be; --behind: #e35d8d; --danger: #e45a70;
+  --radius: 0; --radius-lg: 0; --font: "DejaVu Sans Mono", monospace; --font-display: var(--font); --display-transform: uppercase; --display-spacing: .04em; --row-pad-y: 11px;
+}
+:root[data-personality="pixel"] body { background-image: linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px), linear-gradient(#d9f6fb,#f9d8ed); background-size: 16px 16px,16px 16px,auto; }
+:root[data-personality="pixel"] .topbar { border-bottom: 4px solid #1476e8; background: #fffef0; box-shadow: 4px 4px 0 #9ed3ff; }
+:root[data-personality="pixel"] .brand-mark { width: 27px; height: 27px; border: 3px solid #1476e8; background: #ffec7b; color: #de64be; font-size: 9px; }
+:root[data-personality="pixel"] .hq-head { padding: 18px 22px; border: 4px solid #1476e8; background: #fffef0; box-shadow: 5px 5px 0 #a7cdf5; }
+:root[data-personality="pixel"] .hq-head::before { content: ""; position: absolute; inset: 0 0 auto; height: 10px; background: linear-gradient(90deg,#f8b6dd 0 60%,#b4ee75 60%); border-bottom: 3px solid #1476e8; }
+:root[data-personality="pixel"] .hq-head .hello { margin-top: 8px; font-size: 22px; }
+:root[data-personality="pixel"] .chip-filter, :root[data-personality="pixel"] button, :root[data-personality="pixel"] input { border-radius: 0; border-width: 2px; }
+:root[data-personality="pixel"] button.primary { background: #e96abb; border-color: #1476e8; box-shadow: 3px 3px 0 #1476e8; }
+:root[data-personality="pixel"] .repo-list { border: 0; overflow: visible; background: transparent; display: flex; flex-direction: column; gap: 8px; }
+:root[data-personality="pixel"] .repo-row { border: 3px solid #1476e8; background: #fffef0; box-shadow: 4px 4px 0 #9bc9ef; }
+:root[data-personality="pixel"] .repo-row:last-child { border-bottom: 3px solid #1476e8; }
+:root[data-personality="pixel"] .repo-row:hover { background: #f7e2f1; transform: translate(-1px,-1px); box-shadow: 5px 5px 0 #1476e8; }
+:root[data-personality="pixel"] .rr-name::before { content: "◆"; color: #e96abb; margin-right: 6px; }
+:root[data-personality="pixel"] .rr-chip { border: 2px solid currentColor; border-radius: 0; background: #fffef0; }
+
+/* Modern Glass — violet glass planes with restrained neon depth. */
+:root[data-personality="glass"] {
+  --bg: #9f89e5; --surface: rgba(33,18,101,.55); --surface-2: rgba(62,37,139,.6); --border: rgba(211,201,255,.35); --border-strong: rgba(215,207,255,.7);
+  --text: #f5f3ff; --text-dim: #c8c1ec; --accent: #4bcfff; --accent-weak: rgba(75,207,255,.18); --on-accent: #16104d;
+  --clean: #6bf0b7; --dirty: #ffd36a; --ahead: #8b77ff; --behind: #ff87c6; --danger: #ff8095;
+  --radius: 13px; --radius-lg: 20px; --row-pad-y: 12px; --shadow: 0 16px 38px rgba(28,12,79,.25);
+}
+:root[data-personality="glass"] body { background: radial-gradient(circle at 18% 22%, #ee8da7 0 12%, transparent 36%), radial-gradient(circle at 78% 32%, #4b28d6 0 18%, transparent 44%), linear-gradient(145deg,#b59bea,#7254d2 53%,#241958); }
+:root[data-personality="glass"] .topbar { margin: 14px auto 0; width: min(1440px, calc(100% - 36px)); border: 1px solid rgba(255,255,255,.35); border-radius: 16px; background: rgba(33,18,101,.45); backdrop-filter: blur(16px); }
+:root[data-personality="glass"] .content.hq { max-width: 1440px; }
+:root[data-personality="glass"] .hq-head { padding: 25px 26px; border: 1px solid rgba(255,255,255,.32); border-radius: 22px; background: rgba(38,19,104,.4); backdrop-filter: blur(14px); box-shadow: var(--shadow); }
+:root[data-personality="glass"] .hq-head .hello { font-size: 28px; }
+:root[data-personality="glass"] .chip-filter, :root[data-personality="glass"] button, :root[data-personality="glass"] input { background: rgba(255,255,255,.11); border-color: rgba(255,255,255,.34); backdrop-filter: blur(9px); }
+:root[data-personality="glass"] button.primary { background: linear-gradient(135deg,#54d8ff,#6a56ef); border-color: rgba(255,255,255,.46); box-shadow: 0 8px 22px rgba(48,194,255,.28); }
+:root[data-personality="glass"] .repo-list { border-radius: 18px; background: rgba(25,14,80,.33); backdrop-filter: blur(13px); box-shadow: var(--shadow); }
+:root[data-personality="glass"] .repo-row { background: rgba(255,255,255,.055); }
+:root[data-personality="glass"] .repo-row:hover { background: rgba(255,255,255,.13); }
+:root[data-personality="glass"] .rr-chip { border-color: rgba(255,255,255,.32); box-shadow: 0 5px 14px rgba(20,8,72,.18); }
+:root[data-personality="glass"] .activity-strip { background: rgba(29,14,93,.4); border-color: rgba(255,255,255,.35); backdrop-filter: blur(15px); }
 
 @keyframes scan { to { transform: translateX(100%); } }
 @keyframes nodepulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.55; } }

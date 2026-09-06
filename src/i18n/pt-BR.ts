@@ -47,6 +47,22 @@ export const ptBR: Dict = {
       name: "Jarbas",
       description: "Um assistente pessoal refinado para seus repositórios.",
     },
+    retro: {
+      name: "Retro",
+      description: "Aconchegante, tátil e organizado de forma clássica.",
+    },
+    lineart: {
+      name: "Line Art",
+      description: "Leve, gráfico e organizado com linhas claras.",
+    },
+    pixel: {
+      name: "Pixel Art",
+      description: "Janelas 8-bit divertidas com fatos Git precisos.",
+    },
+    glass: {
+      name: "Modern Glass",
+      description: "Profundidade neon suave e painéis translúcidos.",
+    },
   },
   hq: {
     subtitle: "O que está acontecendo nos seus repositórios locais?",

@@ -47,6 +47,22 @@ export const en = {
       name: "Jarbas",
       description: "A refined personal assistant for your repositories.",
     },
+    retro: {
+      name: "Retro",
+      description: "Warm, tactile and classically organized.",
+    },
+    lineart: {
+      name: "Line Art",
+      description: "Airy, graphic and organized with clear lines.",
+    },
+    pixel: {
+      name: "Pixel Art",
+      description: "Playful 8-bit windows with precise Git facts.",
+    },
+    glass: {
+      name: "Modern Glass",
+      description: "Soft neon depth and translucent panels.",
+    },
   },
   hq: {
     subtitle: "What is happening across your local repositories?",

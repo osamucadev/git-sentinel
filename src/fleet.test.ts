@@ -19,6 +19,9 @@ function state(over: Partial<RepositoryState> = {}): RepositoryState {
     latestCommit: { hash: "abc1234", subject: "init", date: "2026-01-01T00:00:00Z" },
     localBranches: { count: 1, names: ["main"], baseBranch: null },
     localDivergence: null,
+    referenceBranch: "origin/main",
+    referenceBranches: ["origin/main"],
+    referenceDivergence: null,
     remotes: [{ name: "origin", url: "git@x:/r.git" }],
     upstream: "origin/main",
     trackingDivergence: { ahead: 0, behind: 0, baseBranch: "origin/main" },
@@ -74,7 +77,7 @@ describe("deriveStatus — tier", () => {
     expect(st.headline).toBe("conflicted");
   });
 
-  it("dirty working tree is attention", () => {
+  it("dirty working tree is work in progress, not attention", () => {
     const st = deriveStatus(
       input({
         state: state({
@@ -83,7 +86,7 @@ describe("deriveStatus — tier", () => {
       }),
       NOW,
     );
-    expect(st.tier).toBe("attention");
+    expect(st.tier).toBe("working");
     expect(st.headline).toBe("dirty");
     expect(st.facts).toContain("dirty");
   });
@@ -114,7 +117,7 @@ describe("deriveStatus — tier", () => {
     expect(st.headline).toBe("aheadPush");
   });
 
-  it("feature branch ahead of local base, no upstream", () => {
+  it("feature branch is compared with its configured reference independently of upstream", () => {
     const st = deriveStatus(
       input({
         state: state({
@@ -123,13 +126,16 @@ describe("deriveStatus — tier", () => {
           trackingDivergence: null,
           localBranches: { count: 2, names: ["main", "feature/x"], baseBranch: "main" },
           localDivergence: { ahead: 7, behind: 0, baseBranch: "main" },
+          referenceBranch: "origin/homolog",
+          referenceBranches: ["origin/main", "origin/homolog"],
+          referenceDivergence: { ahead: 7, behind: 0, baseBranch: "origin/homolog" },
         }),
       }),
       NOW,
     );
     expect(st.tier).toBe("ahead");
-    expect(st.headline).toBe("aheadBase");
-    expect(st.local).toEqual({ ref: "main", rel: { kind: "ahead", ahead: 7 } });
+    expect(st.headline).toBe("aheadReference");
+    expect(st.reference).toEqual({ ref: "origin/homolog", rel: { kind: "ahead", ahead: 7 } });
     expect(st.upstream).toEqual({ kind: "none" });
   });
 
@@ -234,7 +240,7 @@ describe("summarize", () => {
     expect(sum.total).toBe(4);
     expect(sum.loading).toBe(0);
     expect(sum.healthy).toBe(1);
-    expect(sum.attention).toBe(3); // modified + diverged + unavailable
+    expect(sum.attention).toBe(2); // diverged + unavailable; modified is WIP
     expect(sum.modified).toBe(1);
     expect(sum.diverged).toBe(1);
     expect(sum.unavailable).toBe(1);
@@ -260,7 +266,7 @@ describe("matchesFilter / filterCount", () => {
 
   it("routes repos to the right chips", () => {
     expect(matchesFilter(healthy, "healthy")).toBe(true);
-    expect(matchesFilter(modified, "attention")).toBe(true);
+    expect(matchesFilter(modified, "attention")).toBe(false);
     expect(matchesFilter(modified, "modified")).toBe(true);
     expect(matchesFilter(stale, "stale")).toBe(true);
     expect(matchesFilter(stale, "healthy")).toBe(true);
@@ -270,7 +276,7 @@ describe("matchesFilter / filterCount", () => {
   it("filterCount tallies a set", () => {
     const all = [healthy, modified, stale];
     expect(filterCount(all, "all")).toBe(3);
-    expect(filterCount(all, "attention")).toBe(1);
+    expect(filterCount(all, "attention")).toBe(0);
     expect(filterCount(all, "stale")).toBe(1);
   });
 });

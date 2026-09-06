@@ -21,10 +21,10 @@ export type FleetInput = {
   lastSuccessfulFetch?: string;
 };
 
-export type Tier = "loading" | "blocked" | "attention" | "ahead" | "healthy";
+export type Tier = "loading" | "blocked" | "attention" | "working" | "ahead" | "healthy";
 
 /** Visual grouping in HQ: blocked+attention collapse into one band. */
-export type Group = "loading" | "attention" | "ahead" | "healthy";
+export type Group = "loading" | "attention" | "working" | "ahead" | "healthy";
 
 export type Fact =
   | "unavailable"
@@ -38,9 +38,9 @@ export type Fact =
   | "tracking-unavailable"
   | "no-upstream"
   | "synced"
-  | "ahead-base"
-  | "behind-base"
-  | "diverged-base"
+  | "ahead-reference"
+  | "behind-reference"
+  | "diverged-reference"
   | "aging"
   | "never-fetched";
 
@@ -55,7 +55,7 @@ export type HeadlineKey =
   | "trackingUnavailable"
   | "dirty"
   | "aheadPush"
-  | "aheadBase"
+  | "aheadReference"
   | "synced"
   | "noUpstream"
   | "clean";
@@ -71,7 +71,7 @@ export type Freshness =
   | { kind: "never" }
   | { kind: "fetched"; iso: string; ageMs: number; aging: boolean };
 
-export type LocalPosition = { ref: string; rel: Relation };
+export type ReferencePosition = { ref: string; rel: Relation };
 
 export type UpstreamPosition =
   | { kind: "tracking"; ref: string; rel: Relation; freshness: Freshness }
@@ -83,8 +83,8 @@ export type RepoStatus = {
   group: Group;
   facts: Fact[];
   headline: HeadlineKey;
-  /** vs `localBranches.baseBranch`; null on the base branch or when no base exists. */
-  local: LocalPosition | null;
+  /** vs the configured project reference; falls back to a local branch only when needed. */
+  reference: ReferencePosition | null;
   /** vs `upstream`; null only while still loading with no state. */
   upstream: UpstreamPosition | null;
   /** Short hash when HEAD is detached, else null. */
@@ -114,6 +114,7 @@ const GROUP_OF: Record<Tier, Group> = {
   loading: "loading",
   blocked: "attention",
   attention: "attention",
+  working: "working",
   ahead: "ahead",
   healthy: "healthy",
 };
@@ -123,8 +124,9 @@ export const TIER_RANK: Record<Tier, number> = {
   loading: 0,
   blocked: 1,
   attention: 2,
-  ahead: 3,
-  healthy: 4,
+  working: 3,
+  ahead: 4,
+  healthy: 5,
 };
 
 export function deriveStatus(repo: FleetInput, now: number = Date.now()): RepoStatus {
@@ -135,7 +137,7 @@ export function deriveStatus(repo: FleetInput, now: number = Date.now()): RepoSt
       group: "attention",
       facts: ["unavailable"],
       headline: "unavailable",
-      local: null,
+      reference: null,
       upstream: null,
       detachedAt: null,
       aging: false,
@@ -148,7 +150,7 @@ export function deriveStatus(repo: FleetInput, now: number = Date.now()): RepoSt
       group: "loading",
       facts: ["loading"],
       headline: "loading",
-      local: null,
+      reference: null,
       upstream: null,
       detachedAt: null,
       aging: false,
@@ -163,14 +165,16 @@ export function deriveStatus(repo: FleetInput, now: number = Date.now()): RepoSt
   if (nonConflictChanges > 0) facts.push("dirty");
   if (s.detachedHead) facts.push("detached");
 
-  // --- local base position -------------------------------------------------
-  let local: LocalPosition | null = null;
-  if (s.localDivergence && s.localBranches.baseBranch) {
-    const rel = relation(s.localDivergence);
-    local = { ref: s.localBranches.baseBranch, rel };
-    if (rel.kind === "ahead") facts.push("ahead-base");
-    else if (rel.kind === "behind") facts.push("behind-base");
-    else if (rel.kind === "diverged") facts.push("diverged-base");
+  // --- project reference position -----------------------------------------
+  let reference: ReferencePosition | null = null;
+  const referenceDivergence = s.referenceDivergence ?? s.localDivergence;
+  const referenceBranch = s.referenceBranch ?? s.localBranches.baseBranch;
+  if (referenceDivergence && referenceBranch) {
+    const rel = relation(referenceDivergence);
+    reference = { ref: referenceBranch, rel };
+    if (rel.kind === "ahead") facts.push("ahead-reference");
+    else if (rel.kind === "behind") facts.push("behind-reference");
+    else if (rel.kind === "diverged") facts.push("diverged-reference");
   }
 
   // --- upstream position -------------------------------------------------
@@ -207,11 +211,14 @@ export function deriveStatus(repo: FleetInput, now: number = Date.now()): RepoSt
     has("diverged-upstream") ||
     has("behind-upstream") ||
     has("tracking-unavailable") ||
-    has("dirty") ||
     has("detached")
   ) {
     tier = "attention";
-  } else if (has("ahead-upstream") || has("ahead-base")) {
+  } else if (has("dirty")) {
+    // Local edits are work in progress. They stay visible in the Modified
+    // filter and summary, but are not an operational alert on their own.
+    tier = "working";
+  } else if (has("ahead-upstream") || has("ahead-reference")) {
     tier = "ahead";
   } else {
     tier = "healthy";
@@ -226,7 +233,7 @@ export function deriveStatus(repo: FleetInput, now: number = Date.now()): RepoSt
   else if (has("tracking-unavailable")) headline = "trackingUnavailable";
   else if (has("dirty")) headline = "dirty";
   else if (has("ahead-upstream")) headline = "aheadPush";
-  else if (has("ahead-base")) headline = "aheadBase";
+  else if (has("ahead-reference")) headline = "aheadReference";
   else if (has("synced")) headline = "synced";
   else if (has("no-upstream")) headline = "noUpstream";
   else headline = "clean";
@@ -236,7 +243,7 @@ export function deriveStatus(repo: FleetInput, now: number = Date.now()): RepoSt
     group: GROUP_OF[tier],
     facts,
     headline,
-    local,
+    reference,
     upstream,
     detachedAt: s.detachedHead ? (s.latestCommit?.hash ?? null) : null,
     aging,

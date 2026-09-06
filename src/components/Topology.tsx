@@ -42,18 +42,19 @@ function RelationTrack({ rel, g }: { rel: Relation; g: Glyphs }) {
   );
 }
 
-function Rail({ kind, label, rel, verdict, aging, fresh, g }: {
-  kind: "base" | "upstream";
+function Rail({ kind, label, rel, verdict, aging, fresh, g, d }: {
+  kind: "reference" | "upstream";
   label: string;
   rel: Relation;
   verdict: string;
   aging: boolean;
   fresh?: string;
   g: Glyphs;
+  d: Dict;
 }) {
   return (
     <div className={`topo-rail topo-rail-${kind}`} data-aging={aging || undefined}>
-      <span className="topo-rail-label">{label}</span>
+      <span className="topo-rail-label"><span className="topo-rail-kind">{kind === "reference" ? d.topo.reference : d.topo.tracking}</span>{label}</span>
       <RelationTrack rel={rel} g={g} />
       <span className="topo-rail-verdict">{verdict}</span>
       {fresh && <span className="topo-rail-fresh">{fresh}</span>}
@@ -81,8 +82,8 @@ function Spine({ branch, status, d, p, variant, g }: {
       <div className="topo-pivot" data-testid="topology-pivot">
         <Node kind="you" g={g} /> <span className="topo-branch">{branch}</span>
       </div>
-      {status.local && <Rail kind="base" label={status.local.ref} rel={status.local.rel} verdict={railVerdict(p, d, status.local.rel, "base", status.local.ref, false)} aging={false} g={g} />}
-      {u?.kind === "tracking" && <Rail kind="upstream" label={u.ref} rel={u.rel} verdict={railVerdict(p, d, u.rel, "upstream", u.ref, status.aging)} aging={status.aging} fresh={upstreamFresh(u, d)} g={g} />}
+      {status.reference && <Rail kind="reference" label={status.reference.ref} rel={status.reference.rel} verdict={railVerdict(p, d, status.reference.rel, "reference", status.reference.ref, false)} aging={false} g={g} d={d} />}
+      {u?.kind === "tracking" && <Rail kind="upstream" label={u.ref} rel={u.rel} verdict={railVerdict(p, d, u.rel, "upstream", u.ref, status.aging)} aging={status.aging} fresh={upstreamFresh(u, d)} g={g} d={d} />}
       {u?.kind === "none" && <div className="topo-rail topo-rail-note">{tone(p, variant === "row" ? d.topo.noUpstreamShort : d.topo.noUpstream)}</div>}
       {u?.kind === "unavailable" && <div className="topo-rail topo-rail-note topo-rail-unavailable">{g.ref} {u.ref} · {tone(p, d.topo.trackingUnavailable)}</div>}
     </div>

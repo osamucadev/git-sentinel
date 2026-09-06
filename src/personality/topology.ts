@@ -57,15 +57,15 @@ export function railVerdict(
   p: Personality,
   d: Dict,
   rel: Relation,
-  kind: "base" | "upstream",
+  kind: "reference" | "upstream",
   ref: string,
   aging: boolean,
 ): string {
   const g = glyphs(p);
   const q = aging && kind === "upstream" ? "?" : "";
   const suffix =
-    kind === "base"
-      ? fill(d.topo.ofBase, { ref })
+    kind === "reference"
+      ? fill(d.topo.ofReference, { ref })
       : rel.kind === "behind"
         ? tone(p, d.topo.toPull)
         : tone(p, d.topo.toPush);

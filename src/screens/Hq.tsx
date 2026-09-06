@@ -21,7 +21,7 @@ import { Toast } from "../components/Toast";
 
 type Entry = { repo: RepoView; status: RepoStatus };
 
-const GROUP_ORDER: Group[] = ["loading", "attention", "ahead", "healthy"];
+const GROUP_ORDER: Group[] = ["loading", "attention", "working", "ahead", "healthy"];
 const HEALTHY_CAP = 25;
 
 function commitTime(e: Entry): number {
@@ -74,7 +74,7 @@ export function Hq({ onOpenDetails }: { onOpenDetails: (path: string) => void })
     )
     .sort(bySeverityThenRecent);
 
-  const grouped: Record<Group, Entry[]> = { loading: [], attention: [], ahead: [], healthy: [] };
+  const grouped: Record<Group, Entry[]> = { loading: [], attention: [], working: [], ahead: [], healthy: [] };
   for (const e of visible) grouped[e.status.group].push(e);
 
   async function addRepository() {

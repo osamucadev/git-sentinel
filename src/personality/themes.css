@@ -284,6 +284,7 @@ code, .mono { font-family: var(--font-mono); }
   border-radius: var(--chip-radius); padding: 1px 8px;
 }
 .repo-group[data-group="attention"] .group-head { color: var(--dirty); }
+.repo-group[data-group="working"] .group-head { color: var(--dirty); }
 .group-more {
   margin-top: 8px; font-size: 12px; border-style: dashed; width: 100%;
   background: transparent;
@@ -310,6 +311,7 @@ code, .mono { font-family: var(--font-mono); }
 .repo-row[data-tier="blocked"] { box-shadow: inset 3px 0 0 var(--danger); }
 .repo-row[data-tier="loading"] { box-shadow: inset 3px 0 0 var(--text-dim); }
 .repo-row[data-tier="attention"] { box-shadow: inset 3px 0 0 var(--dirty); }
+.repo-row[data-tier="working"] { box-shadow: inset 3px 0 0 color-mix(in srgb, var(--dirty) 58%, transparent); }
 .repo-row[data-tier="ahead"] { box-shadow: inset 3px 0 0 var(--ahead); }
 
 .rr-identity { min-width: 0; }
@@ -335,7 +337,7 @@ code, .mono { font-family: var(--font-mono); }
 .rr-chip[data-headline="synced"] { background: color-mix(in srgb, var(--clean) 15%, transparent); color: var(--clean); }
 .rr-chip[data-headline="dirty"] { background: color-mix(in srgb, var(--dirty) 16%, transparent); color: var(--dirty); }
 .rr-chip[data-headline="aheadPush"],
-.rr-chip[data-headline="aheadBase"] { background: color-mix(in srgb, var(--ahead) 15%, transparent); color: var(--ahead); }
+.rr-chip[data-headline="aheadReference"] { background: color-mix(in srgb, var(--ahead) 15%, transparent); color: var(--ahead); }
 .rr-chip[data-headline="behind"],
 .rr-chip[data-headline="diverged"],
 .rr-chip[data-headline="detached"],
@@ -412,13 +414,16 @@ code, .mono { font-family: var(--font-mono); }
   font-family: var(--font-mono);
 }
 .topo-rail-label { color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.topo-rail-kind { display: inline-block; margin-right: 5px; font-size: 9px; letter-spacing: .07em; opacity: .72; text-transform: uppercase; }
 .topo-rail-verdict { color: var(--text); white-space: nowrap; }
 .topo-rail-upstream .topo-rail-verdict { color: var(--ahead); }
-.topo-rail-base .topo-rail-verdict { color: var(--text-dim); }
+.topo-rail-reference .topo-rail-verdict { color: var(--text-dim); }
 .topo-rail-fresh { color: var(--text-dim); font-family: var(--font); font-size: 11px; }
 .topo-rail[data-aging] .topo-rail-verdict { color: var(--text-dim); }
 .topo-rail-note { color: var(--text-dim); grid-column: 2 / -1; }
 .topo-rail-unavailable { color: var(--danger); }
+.repository-story { border-left: 2px solid color-mix(in srgb, var(--accent) 45%, transparent); }
+.story-line { margin: 6px 0; max-width: 78ch; line-height: 1.5; }
 
 .topo-track { width: var(--topo-track-width); display: flex; align-items: center; min-height: 14px; }
 .topo-track-synced { justify-content: center; }

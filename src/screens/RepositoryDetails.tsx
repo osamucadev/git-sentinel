@@ -4,6 +4,7 @@ import { fill, relativeTime } from "../i18n";
 import { deriveStatus } from "../fleet";
 import { Topology } from "../components/Topology";
 import { headlineText } from "../personality/topology";
+import { repositoryNarrative } from "../narrative";
 import * as api from "../api";
 
 export function RepositoryDetails({ path, onBack }: { path: string; onBack: () => void }) {
@@ -29,6 +30,7 @@ export function RepositoryDetails({ path, onBack }: { path: string; onBack: () =
     repo.lastSuccessfulFetch
       ? fill(d.topo.fetchedAgo, { time: relativeTime(repo.lastSuccessfulFetch, d) })
       : d.topo.neverFetched;
+  const story = s ? repositoryNarrative({ state: s, status, lastSuccessfulFetch: repo.lastSuccessfulFetch }, d) : [];
 
   return (
     <div className="content details">
@@ -70,17 +72,17 @@ export function RepositoryDetails({ path, onBack }: { path: string; onBack: () =
             />
             <div className="checkout-notes">
               <div>
-                <span className="k">{d.details2.localBaseLabel}</span>{" "}
-                {status.local ? (
+                <span className="k">{d.details2.referenceBranch}</span>{" "}
+                {status.reference ? (
                   <span>
-                    {status.local.ref} ·{" "}
+                    {status.reference.ref} ·{" "}
                     {fill(d.details2.aheadBehind, {
-                      ahead: status.local.rel.kind === "ahead" || status.local.rel.kind === "diverged" ? status.local.rel.ahead : 0,
-                      behind: status.local.rel.kind === "behind" || status.local.rel.kind === "diverged" ? status.local.rel.behind : 0,
+                      ahead: status.reference.rel.kind === "ahead" || status.reference.rel.kind === "diverged" ? status.reference.rel.ahead : 0,
+                      behind: status.reference.rel.kind === "behind" || status.reference.rel.kind === "diverged" ? status.reference.rel.behind : 0,
                     })}
                   </span>
                 ) : (
-                  <span className="muted">{d.details2.noBase}</span>
+                  <span className="muted">{d.details2.noReference}</span>
                 )}
               </div>
               <div>
@@ -98,14 +100,31 @@ export function RepositoryDetails({ path, onBack }: { path: string; onBack: () =
             </div>
           </section>
 
+          <section className="detail-section reference-picker">
+            <h3>{d.details2.referenceBranch}</h3>
+            <p className="muted">{d.details2.referenceHint}</p>
+            <select
+              value={repo.referenceBranch ?? s.referenceBranch ?? ""}
+              onChange={(e) => void app.setReferenceBranch(path, e.target.value || undefined)}
+            >
+              <option value="">{d.details2.noReference}</option>
+              {s.referenceBranches.map((reference) => <option key={reference} value={reference}>{reference}</option>)}
+            </select>
+          </section>
+
+          <section className="detail-section repository-story">
+            <h3>{d.narrative.title}</h3>
+            {story.map((line) => <p key={line} className="story-line">{line}</p>)}
+          </section>
+
           <div className="detail-grid">
             <section className="detail-section">
               <h3>{d.details.workingTree}</h3>
               <div className="kv">
-                <span className="k">{d.card.staged}</span><span className="v">{wt!.staged}</span>
-                <span className="k">{d.card.modified}</span><span className="v">{wt!.modified}</span>
-                <span className="k">{d.card.deleted}</span><span className="v">{wt!.deleted}</span>
-                <span className="k">{d.card.untracked}</span><span className="v">{wt!.untracked}</span>
+                <span className="k" title={d.narrative.staged}>{d.card.staged}</span><span className="v">{wt!.staged}</span>
+                <span className="k" title={d.narrative.modified}>{d.card.modified}</span><span className="v">{wt!.modified}</span>
+                <span className="k" title={d.narrative.deleted}>{d.card.deleted}</span><span className="v">{wt!.deleted}</span>
+                <span className="k" title={d.narrative.untracked}>{d.card.untracked}</span><span className="v">{wt!.untracked}</span>
                 <span className="k">{d.card.conflicts}</span>
                 <span className={`v ${wt!.conflicted > 0 ? "rr-conflict" : ""}`}><b>{wt!.conflicted}</b></span>
               </div>

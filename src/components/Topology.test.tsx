@@ -15,6 +15,9 @@ function state(over: Partial<RepositoryState> = {}): RepositoryState {
     latestCommit: { hash: "abc1234", subject: "init", date: "2026-01-01T00:00:00Z" },
     localBranches: { count: 2, names: ["main", "feature/checkout-label"], baseBranch: "main" },
     localDivergence: { ahead: 2, behind: 0, baseBranch: "main" },
+    referenceBranch: "origin/main",
+    referenceBranches: ["origin/main", "origin/feature/checkout-label"],
+    referenceDivergence: { ahead: 2, behind: 0, baseBranch: "origin/main" },
     remotes: [{ name: "origin" }],
     upstream: "origin/feature/checkout-label",
     trackingDivergence: { ahead: 1, behind: 0, baseBranch: "origin/feature/checkout-label" },
@@ -37,11 +40,12 @@ function render(input: FleetInput, conflicted = 0, variant: "row" | "detail" = "
 }
 
 describe("Topology", () => {
-  it("shows the attached branch once at the shared HEAD pivot with local and tracking rails", () => {
+  it("shows the attached branch once at the shared HEAD pivot with reference and tracking rails", () => {
     const html = render({ loading: false, state: state() });
     expect(html).toContain("feature/checkout-label");
     expect(html.match(/data-testid="topology-pivot"/g)).toHaveLength(1);
-    expect(html).toContain("main");
+    expect(html).toContain("reference");
+    expect(html).toContain("origin/main");
     expect(html).toContain("origin/feature/checkout-label");
     expect(render({ loading: false, state: state() }, 0, "row")).toContain("feature/checkout-label");
   });
@@ -67,6 +71,14 @@ describe("Topology", () => {
     });
     expect(html.match(/data-testid="diverged-track"/g)).toHaveLength(1);
     expect(html.match(/topo-node-fork/g)).toHaveLength(1);
+  });
+
+  it("keeps the reference and tracking rails visible together", () => {
+    const html = render({ loading: false, state: state() });
+    expect(html).toContain("reference");
+    expect(html).toContain("tracking");
+    expect(html.match(/topo-rail-reference/g)).toHaveLength(1);
+    expect(html.match(/topo-rail-upstream/g)).toHaveLength(1);
   });
 
   it("renders a conflict instead of detached topology when both facts exist", () => {

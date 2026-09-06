@@ -32,7 +32,7 @@ export function personaGreeting(p: Personality, d: Dict, o: GreetingOpts): strin
     case "technical":
       return name ? `${word}, ${name}.` : `${word}.`;
     case "cute":
-      return name ? `${word}, ${name}! ✨` : `${word}! ✨`;
+      return name ? `${word}, ${name}-san! ✨` : `${word}, senpai! ✨`;
     case "scifi":
       return "REPOSITORY CONTROL ONLINE";
     case "jarbas": {
@@ -65,7 +65,7 @@ export function personaFleet(p: Personality, d: Dict, o: FleetOpts): { line: str
       return { line: base };
     case "cute":
       return {
-        line: n === 0 ? d.hq.cuteAllClear : base,
+        line: n === 0 ? `${d.hq.cuteAllClear} だいじょうぶ。` : base,
         detail:
           o.summary.modified > 0
             ? fill(d.hq.modifiedNote, { n: o.summary.modified })

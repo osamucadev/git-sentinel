@@ -58,7 +58,7 @@ describe("persona copy", () => {
       total: 3, loading: 0, healthy: 3, attention: 0, ahead: 0, modified: 0,
       conflicted: 0, diverged: 0, behind: 0, unavailable: 0, stale: 0,
     };
-    expect(personaFleet("cute", en, { summary, attentionRepos: [] }).line).toBe(en.hq.cuteAllClear);
+    expect(personaFleet("cute", en, { summary, attentionRepos: [] }).line).toBe(`${en.hq.cuteAllClear} だいじょうぶ。`);
     expect(personaFleet("jarbas", en, { summary, attentionRepos: [] }).line).toBe(en.hq.jarbasAllClear);
   });
 });

@@ -53,10 +53,11 @@ describe("deriveStatus — tier", () => {
     expect(st.facts).toContain("unavailable");
   });
 
-  it("no state yet is a non-blocking loading placeholder", () => {
+  it("no state yet is loading, never healthy", () => {
     const st = deriveStatus({ loading: true }, NOW);
     expect(st.headline).toBe("loading");
-    expect(st.group).toBe("healthy");
+    expect(st.tier).toBe("loading");
+    expect(st.group).toBe("loading");
   });
 
   it("conflicts dominate — blocked even if also ahead", () => {
@@ -156,14 +157,29 @@ describe("deriveStatus — tier", () => {
     expect(st.tier).toBe("blocked");
   });
 
-  it("configured upstream with no tracking divergence is 'gone'", () => {
+  it("configured upstream with no tracking divergence is unavailable, not gone", () => {
     const st = deriveStatus(
       input({ state: state({ upstream: "origin/feature/x", trackingDivergence: null }) }),
       NOW,
     );
-    expect(st.upstream).toEqual({ kind: "gone", ref: "origin/feature/x" });
+    expect(st.upstream).toEqual({ kind: "unavailable", ref: "origin/feature/x" });
     expect(st.tier).toBe("attention");
-    expect(st.headline).toBe("upstreamGone");
+    expect(st.headline).toBe("trackingUnavailable");
+  });
+
+  it("conflicts dominate detached HEAD in the headline", () => {
+    const st = deriveStatus(
+      input({
+        state: state({
+          currentBranch: null,
+          detachedHead: true,
+          workingTree: { clean: false, staged: 0, modified: 0, deleted: 0, untracked: 0, conflicted: 1 },
+        }),
+      }),
+      NOW,
+    );
+    expect(st.tier).toBe("blocked");
+    expect(st.headline).toBe("conflicted");
   });
 });
 
@@ -216,6 +232,7 @@ describe("summarize", () => {
     ];
     const sum = summarize(statuses);
     expect(sum.total).toBe(4);
+    expect(sum.loading).toBe(0);
     expect(sum.healthy).toBe(1);
     expect(sum.attention).toBe(3); // modified + diverged + unavailable
     expect(sum.modified).toBe(1);

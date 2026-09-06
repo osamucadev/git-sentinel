@@ -21,10 +21,10 @@ export type FleetInput = {
   lastSuccessfulFetch?: string;
 };
 
-export type Tier = "blocked" | "attention" | "ahead" | "healthy";
+export type Tier = "loading" | "blocked" | "attention" | "ahead" | "healthy";
 
 /** Visual grouping in HQ: blocked+attention collapse into one band. */
-export type Group = "attention" | "ahead" | "healthy";
+export type Group = "loading" | "attention" | "ahead" | "healthy";
 
 export type Fact =
   | "unavailable"
@@ -35,7 +35,7 @@ export type Fact =
   | "diverged-upstream"
   | "behind-upstream"
   | "ahead-upstream"
-  | "upstream-gone"
+  | "tracking-unavailable"
   | "no-upstream"
   | "synced"
   | "ahead-base"
@@ -52,7 +52,7 @@ export type HeadlineKey =
   | "detached"
   | "diverged"
   | "behind"
-  | "upstreamGone"
+  | "trackingUnavailable"
   | "dirty"
   | "aheadPush"
   | "aheadBase"
@@ -75,7 +75,7 @@ export type LocalPosition = { ref: string; rel: Relation };
 
 export type UpstreamPosition =
   | { kind: "tracking"; ref: string; rel: Relation; freshness: Freshness }
-  | { kind: "gone"; ref: string }
+  | { kind: "unavailable"; ref: string }
   | { kind: "none" };
 
 export type RepoStatus = {
@@ -111,6 +111,7 @@ function freshness(iso: string | undefined, now: number): Freshness {
 }
 
 const GROUP_OF: Record<Tier, Group> = {
+  loading: "loading",
   blocked: "attention",
   attention: "attention",
   ahead: "ahead",
@@ -119,10 +120,11 @@ const GROUP_OF: Record<Tier, Group> = {
 
 /** Sort weight for the default HQ ordering (lower = nearer the top). */
 export const TIER_RANK: Record<Tier, number> = {
-  blocked: 0,
-  attention: 1,
-  ahead: 2,
-  healthy: 3,
+  loading: 0,
+  blocked: 1,
+  attention: 2,
+  ahead: 3,
+  healthy: 4,
 };
 
 export function deriveStatus(repo: FleetInput, now: number = Date.now()): RepoStatus {
@@ -142,8 +144,8 @@ export function deriveStatus(repo: FleetInput, now: number = Date.now()): RepoSt
   const s = repo.state;
   if (!s) {
     return {
-      tier: "healthy",
-      group: "healthy",
+      tier: "loading",
+      group: "loading",
       facts: ["loading"],
       headline: "loading",
       local: null,
@@ -177,10 +179,11 @@ export function deriveStatus(repo: FleetInput, now: number = Date.now()): RepoSt
     upstream = { kind: "none" };
     facts.push("no-upstream");
   } else if (!s.trackingDivergence) {
-    // Upstream is configured but its ahead/behind is unknowable — the
-    // remote-tracking ref is gone (e.g. branch deleted upstream).
-    upstream = { kind: "gone", ref: s.upstream };
-    facts.push("upstream-gone");
+    // `git status` could not provide a comparable tracking position. This is
+    // deliberately not called "gone": the normalized state does not prove why
+    // the comparison is unavailable.
+    upstream = { kind: "unavailable", ref: s.upstream };
+    facts.push("tracking-unavailable");
   } else {
     const rel = relation(s.trackingDivergence);
     const fresh = freshness(repo.lastSuccessfulFetch, now);
@@ -203,7 +206,7 @@ export function deriveStatus(repo: FleetInput, now: number = Date.now()): RepoSt
   } else if (
     has("diverged-upstream") ||
     has("behind-upstream") ||
-    has("upstream-gone") ||
+    has("tracking-unavailable") ||
     has("dirty") ||
     has("detached")
   ) {
@@ -220,7 +223,7 @@ export function deriveStatus(repo: FleetInput, now: number = Date.now()): RepoSt
   else if (has("detached")) headline = "detached";
   else if (has("diverged-upstream")) headline = "diverged";
   else if (has("behind-upstream")) headline = "behind";
-  else if (has("upstream-gone")) headline = "upstreamGone";
+  else if (has("tracking-unavailable")) headline = "trackingUnavailable";
   else if (has("dirty")) headline = "dirty";
   else if (has("ahead-upstream")) headline = "aheadPush";
   else if (has("ahead-base")) headline = "aheadBase";
@@ -244,6 +247,7 @@ export function deriveStatus(repo: FleetInput, now: number = Date.now()): RepoSt
 
 export type FleetSummary = {
   total: number;
+  loading: number;
   healthy: number;
   /** blocked + attention tiers. */
   attention: number;
@@ -263,6 +267,7 @@ export function summarize(statuses: RepoStatus[]): FleetSummary {
   const fact = (f: Fact) => count((st) => st.facts.includes(f));
   return {
     total: statuses.length,
+    loading: count((st) => st.tier === "loading"),
     healthy: count((st) => st.tier === "healthy"),
     attention: count((st) => st.tier === "blocked" || st.tier === "attention"),
     ahead: count((st) => st.tier === "ahead"),

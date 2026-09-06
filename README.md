@@ -1,125 +1,134 @@
 # Git Sentinel
 
-A local-first desktop dashboard for developers who juggle many Git repositories
-on one machine.
+**A local-first desktop command center for the Git repositories already on your machine.**
 
-> I have many repositories and many branches. I frequently lose track of which
-> branch is checked out where, whether I have uncommitted work somewhere, and how
-> far my current work has diverged from the project's main local branch.
+Git Sentinel gives developers one calm, scannable place to see what is happening across their repositories: the current branch, local work, upstream status, a project reference, and the latest commit. It is built for the moment when you have several checkouts open and need an accurate answer before you touch anything.
 
-Git Sentinel aggregates your local repositories into a single window so you can
-answer *"what is happening across my repositories?"* in seconds — without walking
-directories and re-running `git status`, `git branch`, `git log`.
+It observes Git. It does not take ownership of your repositories.
 
-Git Sentinel is an **observer**. It does not replace Git, your terminal, your IDE,
-or your file manager.
+> **Platform status:** Git Sentinel is currently developed and supported on **Linux**. Windows and macOS are not ready yet. Contributions, ports, and forks are very welcome.
 
-## Status
+## Why Git Sentinel
 
-- **Linux only** for now (developed on Ubuntu). No Windows/macOS behavior.
-- First functional version: observation, not actions.
+- Keep a fleet of local repositories in one desktop view.
+- Know which branch is checked out before working in the wrong directory.
+- Separate three useful facts: **local working tree**, **branch upstream**, and **project reference**.
+- Notice local Git changes automatically without polling remotes or installing hooks.
+- Fetch without freezing the desktop interface.
+- Use the same Git facts through eight genuinely different visual personalities.
 
-## Features
+## Gallery
 
-- First-run onboarding: pick a **personality**, a **language**, and what Sentinel
-  should call you.
-- Four presentation personalities — **Technical**, **Cute**, **Sci-Fi**,
-  **Jarbas** — sharing one underlying data model. Personality changes copy,
-  color, typography, spacing and shape; never the Git facts.
-- Three languages: **English** (canonical), **Português (Brasil)**, **Español**.
-- **HQ**: a scannable grid of repository cards showing current branch,
-  clean/dirty state, working-tree counts, latest commit, and divergence.
-- **Local divergence** vs a detected base branch (`main` / `master` / `develop`).
-- **Remote-tracking divergence** vs the current branch's upstream, clearly
-  labelled as last-known (tracking) information, not live server state.
-- **Refresh** (re-read local Git state) and **Fetch** / **Fetch all** (update
-  remote-tracking refs only — never automatic).
-- Repository **details** view: overview, working tree, searchable branch list,
-  remotes, latest commit.
-- **Open in Terminal** and **Open folder** at the repository path.
-- **Remove from Sentinel** — removes only Sentinel's reference; never touches the
-  repository.
+| Technical | Cute |
+| --- | --- |
+| ![Technical personality](docs/images/technical.png) | ![Cute personality](docs/images/cute.png) |
 
-## Safety philosophy
+| Sci-Fi | Jarbas |
+| --- | --- |
+| ![Sci-Fi personality](docs/images/scifi.png) | ![Jarbas personality](docs/images/jarbas.png) |
 
-Git Sentinel does not own your repositories. Registering a repository stores only
-its path. **Nothing** in this version mutates a repository: no pull, push,
-checkout, merge, rebase, reset, branch or stash operations exist in the code.
+| Retro | Line Art |
+| --- | --- |
+| ![Retro personality](docs/images/retro.png) | ![Line Art personality](docs/images/line-art.png) |
 
-`Fetch` is the single network operation, and it only updates remote-tracking
-refs; it never integrates changes into your working branch.
+| Pixel Art | Modern Glass |
+| --- | --- |
+| ![Pixel Art personality](docs/images/pixel-art.png) | ![Modern Glass personality](docs/images/modern-glass.png) |
 
-Removing a repository deletes Sentinel's saved reference and nothing else.
+## What it does
 
-## Credentials and remotes
+### Headquarters
 
-Git Sentinel does **not** manage authentication. No GitHub/GitLab login, OAuth,
-tokens, or SSH keys. It assumes your Git environment is already configured. If a
-fetch fails due to auth/network/SSH, Sentinel shows the Git error and moves on —
-it does not try to solve it. A remote is just a Git remote (any host).
+HQ groups your registered repositories by what needs attention and makes the important state visible at a glance:
 
-## Development setup
+- current branch and latest commit;
+- local changes, staging, untracked files, and conflicts;
+- ahead, behind, and diverged relationships with the branch's configured upstream;
+- a separate relationship with the configured project reference branch;
+- remote-tracking freshness, always described as the result of a previous fetch;
+- concise human interpretation plus compact semantic signals.
 
-Prerequisites:
+Healthy repositories stay compact. Repositories with local work, divergence, conflicts, unavailable tracking, or other relevant state receive proportionally more context.
 
-- Node.js 18+
-- Rust (stable) via [rustup](https://rustup.rs)
-- System libraries for Tauri v2 on Debian/Ubuntu:
+### Repository details
 
-  ```bash
-  sudo apt install -y libwebkit2gtk-4.1-dev libsoup-3.0-dev \
-    libjavascriptcoregtk-4.1-dev libxdo-dev libssl-dev librsvg2-dev \
-    build-essential pkg-config file
-  ```
+Open a repository to inspect its branch, working tree, upstream and reference relationships, remotes, branches, and latest activity in more detail. The details view keeps the Git topology presentation where it is useful; HQ intentionally uses semantic signals instead of a Git graph.
 
-Then:
+### Local refresh and network fetch
+
+Git Sentinel distinguishes local inspection from network activity:
+
+- **Refresh** re-inspects local Git state only.
+- Local Git metadata changes are watched with a small Linux-first debounce, so an external commit or edit refreshes only the affected repository.
+- **Fetch** and **Fetch all** update remote-tracking refs only. They never pull, push, checkout, merge, rebase, reset, or modify your working branch.
+- Network work runs away from the GUI event loop and reports progress in the activity strip, keeping the application navigable and scrollable.
+
+### Personalities and language
+
+Choose among Technical, Cute, Sci-Fi, Jarbas, Retro, Line Art, Pixel Art, and Modern Glass. Every personality shares the exact same inspection model and product behavior; only the presentation, typography, density, and tone change.
+
+The interface is available in English, Brazilian Portuguese, and Spanish.
+
+## Install and run on Linux
+
+### Prerequisites
+
+- Git available on your `PATH`
+- Node.js 18 or later
+- Rust stable, installed with [rustup](https://rustup.rs)
+- Tauri v2 Linux dependencies. On Debian or Ubuntu:
 
 ```bash
+sudo apt install -y \
+  libwebkit2gtk-4.1-dev libsoup-3.0-dev libjavascriptcoregtk-4.1-dev \
+  libxdo-dev libssl-dev librsvg2-dev build-essential pkg-config file
+```
+
+### Development build
+
+```bash
+git clone <your-fork-or-clone-url>
+cd git-sentinel
 npm install
-npm run tauri dev        # run the desktop app in development
-npm run tauri build      # produce a .deb / AppImage in src-tauri/target/release/bundle
+npm run tauri -- dev
 ```
 
-Tests:
+### Production package
 
 ```bash
-npm test                 # frontend logic (Vitest)
-cargo test               # Rust: git inspection unit + integration tests
+npm run tauri -- build
 ```
 
-## Architecture
+Tauri writes Linux bundles under `src-tauri/target/release/bundle/` when the host has the required packaging tools.
 
-```
-Git repository
-      ↓  (git CLI, machine-readable output)
-core crate  — pure Rust: parse status, pick base branch, compute divergence
-      ↓  RepositoryState  (normalized, personality-independent)
-src-tauri   — thin Tauri commands over the core
-      ↓  invoke()
-React UI    — one state model, four personalities (tokens + copy)
+### Test the project
+
+```bash
+npm test
+npm run test:core
+npm run build
 ```
 
-- **`core/`** — `git-sentinel-core`: a GUI-free crate holding all Git logic. It
-  shells out to the system `git` with an explicit argv and working directory
-  (never a shell string) and parses `--porcelain=v2` / `for-each-ref` /
-  `rev-list` output. Unit- and integration-tested with throwaway repositories.
-- **`src-tauri/`** — the Tauri app. `commands.rs` exposes five commands:
-  `validate_repository`, `inspect_repository`, `fetch_repository`,
-  `open_in_terminal`, `open_folder`. No state lives here.
-- **`src/`** — the React front end.
-  - `state/AppState.tsx` — one context: config + registered repos + inspection
-    results, plus all actions.
-  - `store.ts` — persistence via `tauri-plugin-store`, a single JSON file
-    (`~/.local/share/com.gitsentinel.app/sentinel.json`) holding preferences and
-    repository paths. Git state is never persisted as authoritative.
-  - `i18n/` — plain TypeScript dictionaries and a `fill()` interpolator.
-  - `personality/` — `themes.css` (design tokens per `[data-personality]`) and
-    `copy.ts` (tone per personality). Components are shared.
+## Safety and privacy
 
-## Deliberate V1 limitations
+Git Sentinel stores its own preferences and repository paths locally. It does not upload repository data, manage Git credentials, or sign in to Git hosting providers.
 
-- Repository state is inspected on demand (startup, Refresh, Fetch). No file
-  watchers, polling, tray icon or notifications.
-- Remote-tracking numbers can be stale until you fetch; the UI says so.
-- Terminal detection tries `x-terminal-emulator`, then common emulators.
-- The i18n layer is intentionally minimal (no plural rules engine, no ICU).
+Registering a repository does not modify it. Removing one from Sentinel removes only the saved Sentinel entry, never the folder or its Git history. The app relies on the Git environment you already configured for SSH, HTTPS, credentials, and remotes.
+
+## Current limitations
+
+- Linux is the only supported platform today; Windows and macOS are not yet supported.
+- Git Sentinel observes local repositories only. It has no cloud account, synchronization service, tray icon, desktop notifications, or automatic remote fetch.
+- Remote-tracking information is a local snapshot from the most recent Sentinel fetch. It is not proof of live remote state.
+- Git Sentinel deliberately does not offer pull, push, checkout, merge, rebase, reset, branch creation, or stash actions.
+- Terminal launching depends on a compatible terminal emulator being available on the system.
+
+## Contributing and forks
+
+Git Sentinel is intentionally friendly to experimentation. Please feel free to open an issue, submit a pull request, create a platform port, or make your own copy. The project is available under the permissive [MIT License](LICENSE).
+
+For a fuller product and technical guide, see:
+
+- [English documentation](docs/README.en.md)
+- [Documentação em português do Brasil](docs/README.pt-BR.md)
+- [Documentación en español](docs/README.es.md)

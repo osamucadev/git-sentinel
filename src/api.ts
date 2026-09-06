@@ -17,8 +17,8 @@ export function validateRepository(path: string): Promise<string> {
 }
 
 /** Re-reads local Git state. Never contacts a remote. */
-export function inspectRepository(path: string): Promise<RepositoryState> {
-  return invoke("inspect_repository", { path });
+export function inspectRepository(path: string, referenceBranch?: string): Promise<RepositoryState> {
+  return invoke("inspect_repository", { path, referenceBranch });
 }
 
 /** Explicit fetch of remote-tracking refs. */

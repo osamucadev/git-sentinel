@@ -17,6 +17,7 @@ import { DEFAULT_CONFIG, type RegisteredRepo, type RepositoryState, type Sentine
 export type RepoView = {
   path: string;
   lastSuccessfulFetch?: string;
+  referenceBranch?: string;
   state?: RepositoryState;
   error?: string;
   /** Git error from the most recent failed fetch, kept until the next success. */
@@ -61,6 +62,7 @@ type AppState = {
   completeOnboarding: (config: SentinelConfig) => Promise<void>;
   addRepo: (path: string) => Promise<{ ok: true } | { ok: false; error: string }>;
   removeRepo: (path: string) => Promise<void>;
+  setReferenceBranch: (path: string, referenceBranch?: string) => Promise<void>;
   refreshOne: (path: string) => Promise<void>;
   refreshAll: () => Promise<void>;
   fetchOne: (path: string) => Promise<{ ok: boolean; error?: string }>;
@@ -87,13 +89,14 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
         savedRepos.map((r) => ({
           path: r.path,
           lastSuccessfulFetch: r.lastSuccessfulFetch,
+          referenceBranch: r.referenceBranch,
           loading: true,
           fetching: false,
         })),
       );
       setReady(true);
       // Inspect all registered repos (local only, no network).
-      for (const r of savedRepos) void inspect(r.path);
+      for (const r of savedRepos) void inspect(r.path, r.referenceBranch);
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -102,19 +105,26 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     const toSave: RegisteredRepo[] = next.map((r) => ({
       path: r.path,
       lastSuccessfulFetch: r.lastSuccessfulFetch,
+      referenceBranch: r.referenceBranch,
     }));
     void store.saveRepos(toSave);
   }, []);
 
-  const inspect = useCallback(async (path: string) => {
+  const inspect = useCallback(async (path: string, referenceBranch?: string) => {
     setRepos((prev) =>
       prev.map((r) => (r.path === path ? { ...r, loading: true, error: undefined } : r)),
     );
     try {
-      const state = await api.inspectRepository(path);
-      setRepos((prev) =>
-        prev.map((r) => (r.path === path ? { ...r, state, loading: false } : r)),
-      );
+      const state = await api.inspectRepository(path, referenceBranch);
+      setRepos((prev) => {
+        const next = prev.map((r) =>
+          r.path === path
+            ? { ...r, state, loading: false, referenceBranch: state.referenceBranch ?? undefined }
+            : r,
+        );
+        persistRepos(next);
+        return next;
+      });
     } catch (e) {
       setRepos((prev) =>
         prev.map((r) =>
@@ -122,7 +132,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
         ),
       );
     }
-  }, []);
+  }, [persistRepos]);
 
   const updateConfig = useCallback(
     async (patch: Partial<SentinelConfig>) => {
@@ -180,11 +190,26 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     [persistRepos],
   );
 
-  const refreshOne = inspect;
+  const setReferenceBranch = useCallback(
+    async (path: string, referenceBranch?: string) => {
+      setRepos((prev) => {
+        const next = prev.map((r) => (r.path === path ? { ...r, referenceBranch } : r));
+        persistRepos(next);
+        return next;
+      });
+      await inspect(path, referenceBranch);
+    },
+    [inspect, persistRepos],
+  );
+
+  const refreshOne = useCallback(
+    async (path: string) => inspect(path, repos.find((r) => r.path === path)?.referenceBranch),
+    [inspect, repos],
+  );
 
   const refreshAll = useCallback(async () => {
     const paths = repos.map((r) => r.path);
-    await Promise.all(paths.map((p) => inspect(p)));
+    await Promise.all(paths.map((p) => inspect(p, repos.find((r) => r.path === p)?.referenceBranch)));
   }, [repos, inspect]);
 
   const fetchOne = useCallback(
@@ -204,7 +229,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
           persistRepos(next);
           return next;
         });
-        await inspect(path);
+        await inspect(path, repos.find((r) => r.path === path)?.referenceBranch);
         return { ok: true };
       } catch (e) {
         const error = String(e);
@@ -214,7 +239,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
         return { ok: false, error };
       }
     },
-    [inspect, persistRepos],
+    [inspect, persistRepos, repos],
   );
 
   const fetchAll = useCallback(async (): Promise<FetchAllSummary> => {
@@ -241,6 +266,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
       completeOnboarding,
       addRepo,
       removeRepo,
+      setReferenceBranch,
       refreshOne,
       refreshAll,
       fetchOne,
@@ -254,6 +280,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
       completeOnboarding,
       addRepo,
       removeRepo,
+      setReferenceBranch,
       refreshOne,
       refreshAll,
       fetchOne,

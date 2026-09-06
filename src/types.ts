@@ -31,6 +31,9 @@ export type RepositoryState = {
     baseBranch: string | null;
   };
   localDivergence: Divergence | null;
+  referenceBranch: string | null;
+  referenceBranches: string[];
+  referenceDivergence: Divergence | null;
   remotes: Array<{ name: string; url?: string }>;
   upstream: string | null;
   trackingDivergence: Divergence | null;
@@ -52,6 +55,7 @@ export type SentinelConfig = {
 export type RegisteredRepo = {
   path: string;
   lastSuccessfulFetch?: string; // ISO-8601
+  referenceBranch?: string;
 };
 
 export const DEFAULT_CONFIG: SentinelConfig = {

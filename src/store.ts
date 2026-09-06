@@ -32,7 +32,16 @@ export async function loadRepos(): Promise<RegisteredRepo[]> {
   return (await store.get<RegisteredRepo[]>(REPOS_KEY)) ?? [];
 }
 
+/** Keeps persistence intentionally limited to Sentinel-owned repository metadata. */
+export function serializeRepos(repos: RegisteredRepo[]): RegisteredRepo[] {
+  return repos.map((repo) => ({
+    path: repo.path,
+    lastSuccessfulFetch: repo.lastSuccessfulFetch,
+    referenceBranch: repo.referenceBranch,
+  }));
+}
+
 export async function saveRepos(repos: RegisteredRepo[]): Promise<void> {
   const store = await getStore();
-  await store.set(REPOS_KEY, repos);
+  await store.set(REPOS_KEY, serializeRepos(repos));
 }

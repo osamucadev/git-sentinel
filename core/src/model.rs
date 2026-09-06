@@ -16,6 +16,13 @@ pub struct RepositoryState {
     pub local_branches: LocalBranches,
     pub local_divergence: Option<Divergence>,
 
+    /// The project line selected by the user or resolved from existing refs.
+    pub reference_branch: Option<String>,
+    /// Existing refs that may be selected as the repository reference.
+    pub reference_branches: Vec<String>,
+    /// Current checkout compared with `reference_branch`.
+    pub reference_divergence: Option<Divergence>,
+
     pub remotes: Vec<Remote>,
     pub upstream: Option<String>,
     pub tracking_divergence: Option<Divergence>,

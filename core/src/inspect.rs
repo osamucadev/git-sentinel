@@ -108,6 +108,33 @@ pub fn pick_base_branch(current: Option<&str>, branches: &[String]) -> Option<St
     }
 }
 
+/// Chooses a repository reference from refs that actually exist. A saved user
+/// choice wins; otherwise prefer the conventional origin trunk, then known
+/// remote trunks, then the existing local-base heuristic.
+pub fn pick_reference_branch(
+    preferred: Option<&str>,
+    candidates: &[String],
+    local_fallback: Option<String>,
+) -> Option<String> {
+    if let Some(reference) = preferred.filter(|r| candidates.iter().any(|b| b == *r)) {
+        return Some(reference.to_string());
+    }
+
+    for candidate in ["origin/main", "origin/master", "origin/develop"] {
+        if candidates.iter().any(|r| r == candidate) {
+            return Some(candidate.to_string());
+        }
+    }
+
+    for suffix in ["/main", "/master", "/develop"] {
+        if let Some(reference) = candidates.iter().find(|r| r.ends_with(suffix)) {
+            return Some(reference.clone());
+        }
+    }
+
+    local_fallback
+}
+
 /// Parses `git rev-list --left-right --count A...B` output ("<left>\t<right>").
 /// With `base...current`, left = behind, right = ahead.
 pub fn parse_ahead_behind(output: &str) -> (u32, u32) {
@@ -137,6 +164,14 @@ fn parse_remotes(output: &str) -> Vec<Remote> {
 
 /// Inspects the repository at `path` and returns its normalized state.
 pub fn inspect(path: &str) -> Result<RepositoryState, String> {
+    inspect_with_reference(path, None)
+}
+
+/// Inspects a repository with an optional persisted reference-branch choice.
+pub fn inspect_with_reference(
+    path: &str,
+    preferred_reference: Option<&str>,
+) -> Result<RepositoryState, String> {
     let p = Path::new(path);
     if !is_work_tree(p) {
         return Err(format!("{path} is not a Git repository"));
@@ -168,6 +203,16 @@ pub fn inspect(path: &str) -> Result<RepositoryState, String> {
         .lines()
         .map(|s| s.trim().to_string())
         .filter(|s| !s.is_empty())
+        .collect();
+
+    let remote_branches_out = run_git(
+        root_path,
+        &["for-each-ref", "--format=%(refname:short)", "refs/remotes"],
+    )?;
+    let remote_branches: Vec<String> = remote_branches_out
+        .lines()
+        .map(|s| s.trim().to_string())
+        .filter(|s| !s.is_empty() && !s.ends_with("/HEAD"))
         .collect();
 
     let latest_commit = run_git(root_path, &["log", "-1", "--format=%h%x1f%s%x1f%cI"])
@@ -207,6 +252,40 @@ pub fn inspect(path: &str) -> Result<RepositoryState, String> {
         _ => None,
     };
 
+    // Both sets are real refs available in this checkout. Remote-tracking
+    // refs come first so automatic selection keeps its remote-first policy;
+    // local branches remain selectable when a project needs that fallback.
+    let mut reference_branches = remote_branches.clone();
+    for branch in &branch_names {
+        if !reference_branches.contains(branch) {
+            reference_branches.push(branch.clone());
+        }
+    }
+    let reference_branch = pick_reference_branch(
+        preferred_reference,
+        &reference_branches,
+        // On a trunk checkout the old local-base relation is intentionally
+        // absent, but the checked-out local branch is still a real, useful
+        // reference when this repository has no remote refs at all.
+        base_branch.clone().or_else(|| status.branch_head.clone()),
+    );
+    let reference_divergence = match (&status.branch_head, &reference_branch) {
+        (Some(current), Some(reference)) if current != reference => {
+            let range = format!("{reference}...{current}");
+            run_git(root_path, &["rev-list", "--left-right", "--count", &range])
+                .ok()
+                .map(|out| {
+                    let (ahead, behind) = parse_ahead_behind(&out);
+                    Divergence {
+                        ahead,
+                        behind,
+                        base_branch: reference.clone(),
+                    }
+                })
+        }
+        _ => None,
+    };
+
     let remotes = run_git(root_path, &["remote", "-v"])
         .map(|out| parse_remotes(&out))
         .unwrap_or_default();
@@ -237,6 +316,9 @@ pub fn inspect(path: &str) -> Result<RepositoryState, String> {
             base_branch,
         },
         local_divergence,
+        reference_branch,
+        reference_branches,
+        reference_divergence,
         remotes,
         upstream: status.upstream,
         tracking_divergence,
@@ -335,6 +417,29 @@ mod tests {
     fn base_branch_none_when_no_candidate_exists() {
         let branches = vec!["feature/x".to_string(), "trunk".to_string()];
         assert_eq!(pick_base_branch(Some("feature/x"), &branches), None);
+    }
+
+    #[test]
+    fn reference_prefers_origin_main_and_honors_saved_real_choice() {
+        let refs = vec!["origin/main".to_string(), "origin/homolog".to_string()];
+        assert_eq!(
+            pick_reference_branch(None, &refs, Some("main".to_string())).as_deref(),
+            Some("origin/main")
+        );
+        assert_eq!(
+            pick_reference_branch(Some("origin/homolog"), &refs, Some("main".to_string()))
+                .as_deref(),
+            Some("origin/homolog")
+        );
+    }
+
+    #[test]
+    fn reference_falls_back_to_an_existing_local_branch_without_remote_refs() {
+        let refs = vec!["main".to_string(), "feature/x".to_string()];
+        assert_eq!(
+            pick_reference_branch(None, &refs, Some("main".to_string())).as_deref(),
+            Some("main")
+        );
     }
 
     #[test]

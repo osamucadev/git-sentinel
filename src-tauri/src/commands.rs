@@ -18,8 +18,11 @@ pub fn validate_repository(path: String) -> Result<String, String> {
 
 /// Re-reads local Git state for one repository. Never contacts a remote.
 #[tauri::command]
-pub fn inspect_repository(path: String) -> Result<RepositoryState, String> {
-    inspect::inspect(&path)
+pub fn inspect_repository(
+    path: String,
+    reference_branch: Option<String>,
+) -> Result<RepositoryState, String> {
+    inspect::inspect_with_reference(&path, reference_branch.as_deref())
 }
 
 /// Explicit user-triggered fetch. Updates remote-tracking refs only.

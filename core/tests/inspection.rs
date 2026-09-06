@@ -5,7 +5,7 @@ use std::path::Path;
 use std::process::Command;
 
 use git_sentinel_core::git::is_work_tree;
-use git_sentinel_core::inspect::inspect;
+use git_sentinel_core::inspect::{inspect, inspect_with_reference};
 
 fn git(dir: &Path, args: &[&str]) {
     let status = Command::new("git")
@@ -138,6 +138,35 @@ fn repository_without_remote_still_inspects() {
     assert!(state.remotes.is_empty());
     assert_eq!(state.upstream, None);
     assert_eq!(state.tracking_divergence.is_none(), true);
+    assert_eq!(state.reference_branch.as_deref(), Some("main"));
+    assert_eq!(state.reference_branches, vec!["main"]);
+}
+
+#[test]
+fn configured_reference_is_real_persisted_ref_and_has_its_own_divergence() {
+    let remote = tempfile::tempdir().unwrap();
+    git(remote.path(), &["init", "-q", "--bare", "-b", "main"]);
+    let seed = new_repo();
+    commit_file(seed.path(), "a.txt", "one", "initial");
+    git(seed.path(), &["remote", "add", "origin", remote.path().to_str().unwrap()]);
+    git(seed.path(), &["push", "-q", "origin", "main"]);
+    git(seed.path(), &["checkout", "-q", "-b", "homolog"]);
+    commit_file(seed.path(), "h.txt", "homolog", "homolog line");
+    git(seed.path(), &["push", "-q", "origin", "homolog"]);
+
+    let local = tempfile::tempdir().unwrap();
+    let local_path = local.path().join("clone");
+    git(local.path(), &["clone", "-q", remote.path().to_str().unwrap(), local_path.to_str().unwrap()]);
+    git(&local_path, &["checkout", "-q", "-b", "feature/x", "origin/homolog"]);
+    commit_file(&local_path, "f.txt", "feature", "feature work");
+
+    let state = inspect_with_reference(local_path.to_str().unwrap(), Some("origin/homolog")).unwrap();
+    assert!(state.reference_branches.contains(&"origin/main".to_string()));
+    assert!(state.reference_branches.contains(&"origin/homolog".to_string()));
+    assert_eq!(state.reference_branch.as_deref(), Some("origin/homolog"));
+    let divergence = state.reference_divergence.expect("reference divergence expected");
+    assert_eq!(divergence.base_branch, "origin/homolog");
+    assert_eq!((divergence.ahead, divergence.behind), (1, 0));
 }
 
 #[test]

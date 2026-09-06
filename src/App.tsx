@@ -1,51 +1,62 @@
 import { useState } from "react";
-import reactLogo from "./assets/react.svg";
-import { invoke } from "@tauri-apps/api/core";
-import "./App.css";
+import { AppStateProvider, useApp, useDict } from "./state/AppState";
+import { Onboarding } from "./screens/Onboarding";
+import { Hq } from "./screens/Hq";
+import { RepositoryDetails } from "./screens/RepositoryDetails";
+import { Settings } from "./screens/Settings";
+import "./personality/themes.css";
 
-function App() {
-  const [greetMsg, setGreetMsg] = useState("");
-  const [name, setName] = useState("");
+type View = { name: "hq" } | { name: "details"; path: string } | { name: "settings" };
 
-  async function greet() {
-    // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-    setGreetMsg(await invoke("greet", { name }));
+function Shell() {
+  const app = useApp();
+  const d = useDict();
+  const [view, setView] = useState<View>({ name: "hq" });
+
+  if (!app.ready) {
+    return <div className="content">{d.common.loading}</div>;
+  }
+
+  if (!app.config.onboarded) {
+    return (
+      <div className="app-shell">
+        <Onboarding />
+      </div>
+    );
   }
 
   return (
-    <main className="container">
-      <h1>Welcome to Tauri + React</h1>
+    <div className="app-shell">
+      <header className="topbar">
+        <div className="brand" onClick={() => setView({ name: "hq" })} style={{ cursor: "pointer" }}>
+          <h1>Git Sentinel</h1>
+          <span className="sub">{d.common.hq}</span>
+        </div>
+        <div className="actions">
+          <button className="ghost" onClick={() => setView({ name: "hq" })}>
+            {d.common.hq}
+          </button>
+          <button className="ghost" onClick={() => setView({ name: "settings" })}>
+            {d.common.settings}
+          </button>
+        </div>
+      </header>
 
-      <div className="row">
-        <a href="https://vite.dev" target="_blank">
-          <img src="/vite.svg" className="logo vite" alt="Vite logo" />
-        </a>
-        <a href="https://tauri.app" target="_blank">
-          <img src="/tauri.svg" className="logo tauri" alt="Tauri logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <p>Click on the Tauri, Vite, and React logos to learn more.</p>
-
-      <form
-        className="row"
-        onSubmit={(e) => {
-          e.preventDefault();
-          greet();
-        }}
-      >
-        <input
-          id="greet-input"
-          onChange={(e) => setName(e.currentTarget.value)}
-          placeholder="Enter a name..."
-        />
-        <button type="submit">Greet</button>
-      </form>
-      <p>{greetMsg}</p>
-    </main>
+      {view.name === "hq" && (
+        <Hq onOpenDetails={(path) => setView({ name: "details", path })} />
+      )}
+      {view.name === "details" && (
+        <RepositoryDetails path={view.path} onBack={() => setView({ name: "hq" })} />
+      )}
+      {view.name === "settings" && <Settings onBack={() => setView({ name: "hq" })} />}
+    </div>
   );
 }
 
-export default App;
+export default function App() {
+  return (
+    <AppStateProvider>
+      <Shell />
+    </AppStateProvider>
+  );
+}

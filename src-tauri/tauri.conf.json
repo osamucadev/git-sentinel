@@ -12,9 +12,11 @@
   "app": {
     "windows": [
       {
-        "title": "git-sentinel",
-        "width": 800,
-        "height": 600
+        "title": "Git Sentinel",
+        "width": 1180,
+        "height": 820,
+        "minWidth": 720,
+        "minHeight": 560
       }
     ],
     "security": {
@@ -23,7 +25,10 @@
   },
   "bundle": {
     "active": true,
-    "targets": "all",
+    "targets": ["deb", "appimage"],
+    "category": "DeveloperTool",
+    "shortDescription": "Local-first dashboard for your Git repositories",
+    "longDescription": "Git Sentinel aggregates your local Git repositories into one desktop dashboard: current branch, working-tree state, latest commit, and local/remote-tracking divergence. It observes; it never modifies your repositories.",
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",

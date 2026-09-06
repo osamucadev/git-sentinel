@@ -1,16 +1,23 @@
 use std::path::Path;
 use std::process::Command;
 
-/// Terminal emulators tried in order. The first one found on PATH wins.
-/// `x-terminal-emulator` is the Debian/Ubuntu alternatives entry and is
-/// tried first so the user's configured default is honored.
-const TERMINALS: [&str; 6] = [
-    "x-terminal-emulator",
-    "gnome-terminal",
-    "konsole",
-    "xfce4-terminal",
-    "tilix",
-    "xterm",
+/// A terminal emulator and how to tell it which directory to start in.
+/// `None` means the emulator honors the inherited working directory.
+struct Terminal {
+    bin: &'static str,
+    workdir_arg: Option<&'static str>,
+}
+
+/// Tried in order; the first emulator present on PATH wins. Emulators that are
+/// known to ignore the inherited cwd (notably gnome-terminal) are listed with
+/// an explicit flag and placed before the generic `x-terminal-emulator` entry.
+const TERMINALS: [Terminal; 6] = [
+    Terminal { bin: "gnome-terminal", workdir_arg: Some("--working-directory=") },
+    Terminal { bin: "konsole", workdir_arg: Some("--workdir=") },
+    Terminal { bin: "xfce4-terminal", workdir_arg: Some("--working-directory=") },
+    Terminal { bin: "tilix", workdir_arg: Some("--working-directory=") },
+    Terminal { bin: "x-terminal-emulator", workdir_arg: None },
+    Terminal { bin: "xterm", workdir_arg: None },
 ];
 
 fn on_path(bin: &str) -> bool {
@@ -32,15 +39,13 @@ pub fn open_in_terminal(dir: &str) -> Result<(), String> {
 
     let terminal = TERMINALS
         .iter()
-        .find(|t| on_path(t))
+        .find(|t| on_path(t.bin))
         .ok_or("no supported terminal emulator found")?;
 
-    // Most emulators honor the inherited working directory; gnome-terminal
-    // needs it stated explicitly.
-    let mut cmd = Command::new(terminal);
+    let mut cmd = Command::new(terminal.bin);
     cmd.current_dir(path);
-    if *terminal == "gnome-terminal" {
-        cmd.arg(format!("--working-directory={dir}"));
+    if let Some(prefix) = terminal.workdir_arg {
+        cmd.arg(format!("{prefix}{dir}"));
     }
 
     cmd.spawn()

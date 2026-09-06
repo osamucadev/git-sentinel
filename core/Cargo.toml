@@ -1,0 +1,11 @@
+[package]
+name = "git-sentinel-core"
+version = "0.1.0"
+edition = "2021"
+description = "Pure Git inspection logic for Git Sentinel"
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+
+[dev-dependencies]
+tempfile = "3"

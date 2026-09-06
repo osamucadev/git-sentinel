@@ -132,6 +132,7 @@ export function Hq({ onOpenDetails }: { onOpenDetails: (path: string) => void })
   return (
     <div className="content hq">
       <header className="hq-head">
+        <div className="hq-presence" aria-hidden="true"><i /><i /><i /></div>
         <div className="hello">
           {personaGreeting(p, d, {
             preferredName: app.config.preferredName,

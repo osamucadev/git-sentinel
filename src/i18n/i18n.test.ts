@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { fill, greetingPart, relativeTime } from "./index";
 import { en } from "./en";
-import { personaGreeting, personaStatus } from "../personality/copy";
+import { personaFleet, personaGreeting, personaStatus } from "../personality/copy";
 
 describe("fill", () => {
   it("replaces named placeholders", () => {
@@ -51,5 +51,14 @@ describe("persona copy", () => {
   it("status always carries the real numbers", () => {
     expect(personaStatus("cute", en, { total: 3, dirty: 2 })).toContain("3");
     expect(personaStatus("cute", en, { total: 3, dirty: 2 })).toContain("2");
+  });
+
+  it("uses distinct calm all-clear copy for Cute and Jarbas", () => {
+    const summary = {
+      total: 3, loading: 0, healthy: 3, attention: 0, ahead: 0, modified: 0,
+      conflicted: 0, diverged: 0, behind: 0, unavailable: 0, stale: 0,
+    };
+    expect(personaFleet("cute", en, { summary, attentionRepos: [] }).line).toBe(en.hq.cuteAllClear);
+    expect(personaFleet("jarbas", en, { summary, attentionRepos: [] }).line).toBe(en.hq.jarbasAllClear);
   });
 });

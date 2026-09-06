@@ -208,6 +208,7 @@ code, .mono { font-family: var(--font-mono); }
   z-index: 5;
 }
 .topbar .brand { display: flex; align-items: baseline; gap: 10px; }
+.brand-mark { display: inline-grid; place-items: center; color: var(--accent); font-size: 18px; line-height: 1; }
 .topbar .brand h1 { font-size: 16px; }
 .topbar .brand .sub { color: var(--text-dim); font-size: 12px; }
 .topbar .actions { display: flex; gap: 8px; }
@@ -237,7 +238,8 @@ code, .mono { font-family: var(--font-mono); }
 .content.hq { max-width: 1440px; }
 .content.details { max-width: 1080px; }
 
-.hq-head { margin-bottom: 18px; display: flex; flex-direction: column; gap: 8px; }
+.hq-head { margin-bottom: 18px; display: flex; flex-direction: column; gap: 8px; position: relative; }
+.hq-presence { display: none; }
 .hq-head .hello {
   font-size: 21px; font-family: var(--font-display);
   text-transform: var(--display-transform); letter-spacing: var(--display-spacing);
@@ -561,34 +563,160 @@ ul { margin: 0; padding: 0; }
    Information layout is shared; these change tone, density and motion only.
    ============================================================ */
 
-/* Technical — no motion, tightest rhythm, plain rules. */
-:root[data-personality="technical"] .repo-list { box-shadow: none; }
-
-/* Cute — softer rails, a gentle settle on the YOU node. */
-:root[data-personality="cute"] .topo-node-you {
-  transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
+/* Technical — a restrained, tabular desktop tool. */
+:root[data-personality="technical"] {
+  --bg: #eef3f8;
+  --surface: #fbfdff;
+  --surface-2: #f2f7fc;
+  --border: #d8e2ec;
+  --border-strong: #bacbdb;
+  --text: #112744;
+  --text-dim: #61758d;
+  --accent: #1473e6;
+  --accent-weak: #e2f0ff;
+  --radius: 5px;
+  --radius-lg: 7px;
+  --shadow: 0 1px 2px rgba(23, 54, 85, 0.05);
+  --row-pad-y: 9px;
 }
-:root[data-personality="cute"] .repo-row:hover .topo-node-you { transform: scale(1.25); }
-:root[data-personality="cute"] .rr-chip { box-shadow: 0 1px 3px rgba(214, 85, 143, 0.12); }
-:root[data-personality="cute"] .group-head::after { opacity: 0.6; }
+:root[data-personality="technical"] .topbar { padding: 12px 26px; box-shadow: 0 1px 0 rgba(20, 67, 112, 0.04); }
+:root[data-personality="technical"] .brand-mark { width: 23px; height: 23px; border: 1px solid var(--accent); border-radius: 4px; font-size: 12px; }
+:root[data-personality="technical"] .content.hq { max-width: 1500px; }
+:root[data-personality="technical"] .hq-head { padding: 4px 0 12px; border-bottom: 1px solid var(--border); }
+:root[data-personality="technical"] .hq-head .hello { font-size: 22px; }
+:root[data-personality="technical"] .hq-summary { color: #42617f; }
+:root[data-personality="technical"] .chip-filter { border-radius: 5px; padding: 4px 9px; }
+:root[data-personality="technical"] .repo-group { margin-top: 17px; }
+:root[data-personality="technical"] .repo-list { border-radius: 6px; box-shadow: none; }
+:root[data-personality="technical"] .repo-row { grid-template-columns: minmax(200px, 260px) 135px minmax(350px, 1fr) minmax(165px, 220px) auto; gap: 14px; }
+:root[data-personality="technical"] .repo-row:hover { background: #f4f9ff; }
+:root[data-personality="technical"] .rr-chip { border-radius: 4px; font-size: 10px; letter-spacing: 0.02em; }
+:root[data-personality="technical"] .topo-spine { --topo-label-width: 170px; --topo-track-width: 160px; --topo-pivot-offset: 80px; }
+:root[data-personality="technical"] .topo-node-you { text-shadow: none; }
+:root[data-personality="technical"] .repo-row .rr-actions .icon-btn { opacity: 0.68; }
+:root[data-personality="technical"] .repo-row:hover .rr-actions .icon-btn { opacity: 1; }
 
-/* Sci-Fi — command console: scan sweep on hover, faint pulse on YOU. */
-:root[data-personality="scifi"] .repo-row { position: relative; overflow: hidden; }
-:root[data-personality="scifi"] .repo-row::after {
-  content: ""; position: absolute; inset: 0; pointer-events: none;
-  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--accent) 12%, transparent), transparent);
-  transform: translateX(-100%);
+/* Cute — generous rhythm, soft materials and quietly expressive details. */
+:root[data-personality="cute"] {
+  --bg: #fff7fb;
+  --surface: #fffdfd;
+  --surface-2: #fff0f7;
+  --border: #f0d8e5;
+  --border-strong: #e9bcd4;
+  --text: #513341;
+  --text-dim: #a07088;
+  --accent: #d95291;
+  --accent-weak: #ffe0ee;
+  --radius: 13px;
+  --radius-lg: 20px;
+  --row-pad-y: 13px;
 }
-:root[data-personality="scifi"] .repo-row:hover::after { animation: scan 0.9s ease-out; }
-@keyframes scan { to { transform: translateX(100%); } }
+:root[data-personality="cute"] .topbar { border-bottom-color: #f4d7e5; }
+:root[data-personality="cute"] .brand-mark { color: #cf6191; font-size: 20px; transform: rotate(45deg); }
+:root[data-personality="cute"] .hq-head { padding: 18px 190px 18px 18px; border: 1px solid var(--border); border-radius: 24px; background: linear-gradient(115deg, #fffdfd, #fff0f7); }
+:root[data-personality="cute"] .hq-presence { display: flex; position: absolute; right: 32px; top: 28px; gap: 12px; align-items: end; }
+:root[data-personality="cute"] .hq-presence i { display: block; width: 14px; height: 14px; border-radius: 50% 50% 50% 3px; transform: rotate(-45deg); background: #f7a7c7; opacity: 0.75; }
+:root[data-personality="cute"] .hq-presence i:nth-child(2) { width: 24px; height: 24px; background: #d95291; opacity: 0.9; }
+:root[data-personality="cute"] .hq-presence i:nth-child(3) { width: 10px; height: 10px; background: #d8a3dc; }
+:root[data-personality="cute"] .hq-head .hello { font-size: 24px; }
+:root[data-personality="cute"] .hq-interpretation { font-weight: 600; }
+:root[data-personality="cute"] .chip-filter { padding: 5px 11px; box-shadow: 0 1px 0 rgba(217, 82, 145, 0.08); }
+:root[data-personality="cute"] .repo-list { border-radius: 18px; box-shadow: 0 10px 26px rgba(190, 91, 135, 0.06); }
+:root[data-personality="cute"] .repo-row { gap: 18px; }
+:root[data-personality="cute"] .repo-row:hover { background: #fff5fa; }
+:root[data-personality="cute"] .rr-name::before { content: "✦"; color: var(--accent); margin-right: 6px; font-size: 10px; }
+:root[data-personality="cute"] .rr-chip { padding: 3px 9px; }
+:root[data-personality="cute"] .topo-seg { border-radius: 999px; }
+:root[data-personality="cute"] .topo-node-you { transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1); }
+:root[data-personality="cute"] .repo-row:hover .topo-node-you { transform: scale(1.22); }
+:root[data-personality="cute"] .group-head::after { opacity: 0.55; }
+
+/* Sci-Fi — an understated command center built from rails, signals and mono type. */
+:root[data-personality="scifi"] {
+  --bg: #050a10;
+  --surface: #09131d;
+  --surface-2: #0c1a27;
+  --border: #153347;
+  --border-strong: #1b5974;
+  --text: #d9f7ff;
+  --text-dim: #719ab0;
+  --accent: #19d7e8;
+  --accent-weak: #082f3b;
+  --radius: 2px;
+  --radius-lg: 4px;
+  --row-pad-y: 10px;
+  --topo-line: 1px solid color-mix(in srgb, var(--accent) 78%, transparent);
+}
+:root[data-personality="scifi"] body { background-image: linear-gradient(rgba(24, 119, 145, 0.045) 1px, transparent 1px), linear-gradient(90deg, rgba(24, 119, 145, 0.035) 1px, transparent 1px); background-size: 32px 32px; }
+:root[data-personality="scifi"] .topbar { padding: 13px 24px; border-bottom-color: #1c526b; background: rgba(5, 13, 21, 0.96); }
+:root[data-personality="scifi"] .brand-mark { width: 25px; height: 25px; border: 1px solid var(--accent); clip-path: polygon(50% 0, 100% 28%, 82% 100%, 18% 100%, 0 28%); font-size: 11px; text-shadow: var(--glow); }
+:root[data-personality="scifi"] .content.hq { max-width: 1540px; }
+:root[data-personality="scifi"] .hq-head { padding: 18px 24px 16px; border: 1px solid #1a5871; background: linear-gradient(90deg, rgba(9, 27, 39, 0.92), rgba(5, 15, 23, 0.55)); box-shadow: inset 3px 0 0 var(--accent), 0 0 28px rgba(25, 215, 232, 0.05); }
+:root[data-personality="scifi"] .hq-head::after { content: ""; position: absolute; right: 20px; top: 16px; width: 44px; height: 16px; background: radial-gradient(circle, var(--accent) 1px, transparent 2px) 0 50% / 14px 14px repeat-x; opacity: 0.72; }
+:root[data-personality="scifi"] .hq-head .hello { font-size: 20px; color: var(--accent); }
+:root[data-personality="scifi"] .hq-interpretation { font-family: var(--font-mono); }
+:root[data-personality="scifi"] .hq-summary { border-top: 1px solid rgba(25, 215, 232, 0.18); padding-top: 8px; }
+:root[data-personality="scifi"] .chip-filter { border-radius: 1px; font-family: var(--font-mono); padding: 4px 10px; }
+:root[data-personality="scifi"] .repo-list { border-color: #1a536b; border-radius: 2px; box-shadow: 0 0 22px rgba(5, 180, 220, 0.045); }
+:root[data-personality="scifi"] .repo-row { grid-template-columns: minmax(190px, 250px) 150px minmax(360px, 1fr) minmax(155px, 215px) auto; gap: 15px; }
+:root[data-personality="scifi"] .repo-row:hover { background: #0b1d2a; }
+:root[data-personality="scifi"] .rr-name { color: #effcff; }
+:root[data-personality="scifi"] .rr-name::before { content: "▰"; color: var(--accent); margin-right: 7px; font-size: 10px; }
+:root[data-personality="scifi"] .rr-chip { border: 1px solid currentColor; border-radius: 1px; background: transparent !important; }
+:root[data-personality="scifi"] .topo-spine { --topo-label-width: 176px; --topo-track-width: 196px; --topo-pivot-offset: 98px; }
+:root[data-personality="scifi"] .topo-pivot { color: #f1feff; text-shadow: var(--glow); }
+:root[data-personality="scifi"] .topo-node-ref { color: #5da8c7; }
 :root[data-personality="scifi"] .topo-node-you { animation: nodepulse 3s ease-in-out infinite; }
-@keyframes nodepulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.55; } }
 :root[data-personality="scifi"] .group-title::before { content: "// "; opacity: 0.6; }
+:root[data-personality="scifi"] .group-head { border-bottom: 1px solid rgba(25, 215, 232, 0.16); padding-bottom: 4px; }
+:root[data-personality="scifi"] .repo-row { position: relative; overflow: hidden; }
+:root[data-personality="scifi"] .repo-row::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--accent) 10%, transparent), transparent); transform: translateX(-100%); }
+:root[data-personality="scifi"] .repo-row:hover::after { animation: scan 0.8s ease-out; }
 
-/* Jarbas — calm, editorial, a slow fade and nothing more. */
-:root[data-personality="jarbas"] .repo-row { transition: background 0.3s ease; }
-:root[data-personality="jarbas"] .hq-interpretation { font-family: var(--font-display); font-size: 15px; }
-:root[data-personality="jarbas"] .group-head { letter-spacing: 0.12em; }
+/* Jarbas — calm editorial hierarchy over precise technical data. */
+:root[data-personality="jarbas"] {
+  --bg: #161510;
+  --surface: #1d1b15;
+  --surface-2: #28231a;
+  --border: #403725;
+  --border-strong: #5f5034;
+  --text: #f3ead9;
+  --text-dim: #b5a88e;
+  --accent: #d6ad62;
+  --accent-weak: #322717;
+  --radius: 7px;
+  --radius-lg: 12px;
+  --row-pad-y: 13px;
+  --topo-line: 1px solid color-mix(in srgb, var(--accent) 78%, var(--border));
+}
+:root[data-personality="jarbas"] body { background-image: radial-gradient(circle at 84% 12%, rgba(183, 138, 61, 0.09), transparent 26%), linear-gradient(135deg, rgba(255,255,255,0.012) 25%, transparent 25%); }
+:root[data-personality="jarbas"] .topbar { padding: 15px 28px; background: rgba(22, 21, 16, 0.94); border-bottom-color: #50432d; }
+:root[data-personality="jarbas"] .brand-mark { font-size: 15px; color: var(--accent); }
+:root[data-personality="jarbas"] .topbar .brand h1 { font-family: var(--font-display); font-size: 18px; }
+:root[data-personality="jarbas"] .content.hq { max-width: 1460px; }
+:root[data-personality="jarbas"] .hq-head { padding: 22px 230px 20px 24px; border-bottom: 1px solid #5a4a30; }
+:root[data-personality="jarbas"] .hq-presence { display: flex; position: absolute; right: 32px; top: 26px; width: 150px; justify-content: center; gap: 10px; }
+:root[data-personality="jarbas"] .hq-presence::before, :root[data-personality="jarbas"] .hq-presence::after { content: ""; width: 40px; height: 1px; background: linear-gradient(90deg, transparent, var(--accent)); align-self: center; }
+:root[data-personality="jarbas"] .hq-presence::after { transform: scaleX(-1); }
+:root[data-personality="jarbas"] .hq-presence i { width: 6px; height: 6px; border: 1px solid var(--accent); transform: rotate(45deg); }
+:root[data-personality="jarbas"] .hq-head .hello { font-size: 29px; font-weight: 500; }
+:root[data-personality="jarbas"] .hq-interpretation { font-family: var(--font-display); font-size: 16px; }
+:root[data-personality="jarbas"] .hq-interpretation-detail { max-width: 700px; line-height: 1.65; }
+:root[data-personality="jarbas"] .hq-summary { color: #c3b28e; }
+:root[data-personality="jarbas"] .chip-filter { border-radius: 999px; padding: 4px 11px; }
+:root[data-personality="jarbas"] .repo-list { border-radius: 10px; background: linear-gradient(135deg, rgba(255,255,255,0.018), transparent 55%), var(--surface); box-shadow: 0 14px 35px rgba(0,0,0,0.18); }
+:root[data-personality="jarbas"] .repo-row { grid-template-columns: minmax(200px, 255px) 145px minmax(340px, 1fr) minmax(160px, 220px) auto; gap: 17px; }
+:root[data-personality="jarbas"] .repo-row:hover { background: #272218; }
+:root[data-personality="jarbas"] .rr-name { font-family: var(--font-display); font-size: 15px; font-weight: 600; }
+:root[data-personality="jarbas"] .rr-name::before { content: "◆"; color: var(--accent); margin-right: 7px; font-size: 8px; vertical-align: 2px; }
+:root[data-personality="jarbas"] .rr-chip { border-radius: 4px; font-family: var(--font-display); font-weight: 600; }
+:root[data-personality="jarbas"] .topo-spine { --topo-label-width: 178px; --topo-track-width: 188px; --topo-pivot-offset: 94px; }
+:root[data-personality="jarbas"] .topo-pivot { font-family: var(--font-display); font-size: 13px; }
+:root[data-personality="jarbas"] .group-head { letter-spacing: 0.14em; color: #c5ae7a; }
+:root[data-personality="jarbas"] .group-head::after { background: linear-gradient(90deg, #5a492e, transparent); }
+
+@keyframes scan { to { transform: translateX(100%); } }
+@keyframes nodepulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.55; } }
 
 @media (prefers-reduced-motion: reduce) {
   :root[data-personality="scifi"] .repo-row:hover::after,

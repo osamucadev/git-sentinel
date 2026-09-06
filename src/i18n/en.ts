@@ -60,6 +60,8 @@ export const en = {
     fetchedFailed: "{n} failed",
     searchPlaceholder: "Search repositories…",
     allClear: "Everything is in order.",
+    cuteAllClear: "Your repositories are all settled in.",
+    jarbasAllClear: "Everything is in order. Nothing requires you just now.",
     attentionOne: "One repository needs your attention.",
     attentionMany: "{n} repositories need your attention.",
     modifiedNote: "{n} with local changes to review.",

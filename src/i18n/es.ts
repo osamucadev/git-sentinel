@@ -60,6 +60,8 @@ export const es: Dict = {
     fetchedFailed: "{n} fallaron",
     searchPlaceholder: "Buscar repositorios…",
     allClear: "Todo está en orden.",
+    cuteAllClear: "Todos tus repositorios están en orden.",
+    jarbasAllClear: "Todo está en orden. Nada requiere tu atención ahora.",
     attentionOne: "Un repositorio necesita tu atención.",
     attentionMany: "{n} repositorios necesitan tu atención.",
     modifiedNote: "{n} con cambios locales para revisar.",

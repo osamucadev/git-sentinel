@@ -60,7 +60,7 @@ export function personaFleet(p: Personality, d: Dict, o: FleetOpts): { line: str
       return { line: base };
     case "cute":
       return {
-        line: base,
+        line: n === 0 ? d.hq.cuteAllClear : base,
         detail:
           o.summary.modified > 0
             ? fill(d.hq.modifiedNote, { n: o.summary.modified })
@@ -72,7 +72,10 @@ export function personaFleet(p: Personality, d: Dict, o: FleetOpts): { line: str
       const named = o.attentionRepos.slice(0, 2).map((r) =>
         fill("{name} — {what}", { name: r.name, what: d.status[r.headline].toLowerCase() }),
       );
-      return { line: base, detail: named.length > 0 ? `${named.join(". ")}.` : undefined };
+      return {
+        line: n === 0 ? d.hq.jarbasAllClear : base,
+        detail: named.length > 0 ? `${named.join(". ")}.` : undefined,
+      };
     }
   }
 }

@@ -60,6 +60,8 @@ export const ptBR: Dict = {
     fetchedFailed: "{n} falharam",
     searchPlaceholder: "Buscar repositórios…",
     allClear: "Está tudo em ordem.",
+    cuteAllClear: "Seus repositórios estão todos em ordem.",
+    jarbasAllClear: "Está tudo em ordem. Nada exige você neste momento.",
     attentionOne: "Um repositório precisa da sua atenção.",
     attentionMany: "{n} repositórios precisam da sua atenção.",
     modifiedNote: "{n} com alterações locais para revisar.",

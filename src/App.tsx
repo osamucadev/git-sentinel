@@ -29,6 +29,7 @@ function Shell() {
     <div className="app-shell">
       <header className="topbar">
         <div className="brand" onClick={() => setView({ name: "hq" })} style={{ cursor: "pointer" }}>
+          <span className="brand-mark" aria-hidden="true">◆</span>
           <h1>Git Sentinel</h1>
           <span className="sub">{d.common.hq}</span>
         </div>

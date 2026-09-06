@@ -19,9 +19,39 @@ export type RepoView = {
   lastSuccessfulFetch?: string;
   state?: RepositoryState;
   error?: string;
+  /** Git error from the most recent failed fetch, kept until the next success. */
+  fetchError?: string;
   loading: boolean;
   fetching: boolean;
 };
+
+/** Result of a Fetch all run. */
+export type FetchAllSummary = {
+  succeeded: number;
+  failed: Array<{ path: string; error: string }>;
+};
+
+/** Runs `task` over `items`, at most `limit` in flight at once. No framework:
+ * a fixed pool of workers pulling from a shared index. */
+export async function mapWithConcurrency<T, R>(
+  items: T[],
+  limit: number,
+  task: (item: T) => Promise<R>,
+): Promise<R[]> {
+  const results: R[] = new Array(items.length);
+  let next = 0;
+  async function worker() {
+    while (next < items.length) {
+      const i = next++;
+      results[i] = await task(items[i]);
+    }
+  }
+  const workers = Array.from({ length: Math.min(limit, items.length) }, worker);
+  await Promise.all(workers);
+  return results;
+}
+
+const FETCH_ALL_CONCURRENCY = 4;
 
 type AppState = {
   ready: boolean;
@@ -34,7 +64,7 @@ type AppState = {
   refreshOne: (path: string) => Promise<void>;
   refreshAll: () => Promise<void>;
   fetchOne: (path: string) => Promise<{ ok: boolean; error?: string }>;
-  fetchAll: () => Promise<void>;
+  fetchAll: () => Promise<FetchAllSummary>;
 };
 
 const Ctx = createContext<AppState | null>(null);
@@ -167,7 +197,9 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
         const when = new Date().toISOString();
         setRepos((prev) => {
           const next = prev.map((r) =>
-            r.path === path ? { ...r, fetching: false, lastSuccessfulFetch: when } : r,
+            r.path === path
+              ? { ...r, fetching: false, lastSuccessfulFetch: when, fetchError: undefined }
+              : r,
           );
           persistRepos(next);
           return next;
@@ -175,19 +207,29 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
         await inspect(path);
         return { ok: true };
       } catch (e) {
+        const error = String(e);
         setRepos((prev) =>
-          prev.map((r) => (r.path === path ? { ...r, fetching: false } : r)),
+          prev.map((r) => (r.path === path ? { ...r, fetching: false, fetchError: error } : r)),
         );
-        return { ok: false, error: String(e) };
+        return { ok: false, error };
       }
     },
     [inspect, persistRepos],
   );
 
-  const fetchAll = useCallback(async () => {
-    // One repo failing must not stop the others.
+  const fetchAll = useCallback(async (): Promise<FetchAllSummary> => {
+    // A few at a time; one repo failing must not stop the others.
     const paths = repos.map((r) => r.path);
-    await Promise.all(paths.map((p) => fetchOne(p)));
+    const results = await mapWithConcurrency(paths, FETCH_ALL_CONCURRENCY, async (p) => ({
+      path: p,
+      ...(await fetchOne(p)),
+    }));
+    return {
+      succeeded: results.filter((r) => r.ok).length,
+      failed: results
+        .filter((r) => !r.ok)
+        .map((r) => ({ path: r.path, error: r.error ?? "unknown error" })),
+    };
   }, [repos, fetchOne]);
 
   const value = useMemo<AppState>(

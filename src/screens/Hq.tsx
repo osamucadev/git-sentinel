@@ -29,9 +29,17 @@ export function Hq({ onOpenDetails }: { onOpenDetails: (path: string) => void })
 
   async function fetchAll() {
     setBusy(true);
-    await app.fetchAll();
+    const summary = await app.fetchAll();
     setBusy(false);
-    setToast({ msg: d.settings.saved, kind: "ok" });
+    const ok = fill(d.hq.fetchedOk, { n: summary.succeeded });
+    if (summary.failed.length === 0) {
+      setToast({ msg: ok, kind: "ok" });
+    } else {
+      setToast({
+        msg: `${ok} · ${fill(d.hq.fetchedFailed, { n: summary.failed.length })}`,
+        kind: "error",
+      });
+    }
   }
 
   const removeTarget = app.repos.find((r) => r.path === confirmRemove);

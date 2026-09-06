@@ -4,6 +4,7 @@ export const en = {
   common: {
     add: "Add",
     cancel: "Cancel",
+    close: "Close",
     save: "Save",
     back: "Back",
     open: "Open",

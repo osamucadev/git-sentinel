@@ -4,6 +4,7 @@ export const es: Dict = {
   common: {
     add: "Añadir",
     cancel: "Cancelar",
+    close: "Cerrar",
     save: "Guardar",
     back: "Volver",
     open: "Abrir",

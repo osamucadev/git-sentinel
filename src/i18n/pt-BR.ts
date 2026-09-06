@@ -4,6 +4,7 @@ export const ptBR: Dict = {
   common: {
     add: "Adicionar",
     cancel: "Cancelar",
+    close: "Fechar",
     save: "Salvar",
     back: "Voltar",
     open: "Abrir",

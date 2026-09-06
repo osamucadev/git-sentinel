@@ -1,5 +1,9 @@
 # Git Sentinel
 
+<p align="center">
+  <img src="src-tauri/icons/icon.png" width="112" alt="Git Sentinel official icon">
+</p>
+
 **A local-first desktop command center for the Git repositories already on your machine.**
 
 Git Sentinel gives developers one calm, scannable place to see what is happening across their repositories: the current branch, local work, upstream status, a project reference, and the latest commit. It is built for the moment when you have several checkouts open and need an accurate answer before you touch anything.

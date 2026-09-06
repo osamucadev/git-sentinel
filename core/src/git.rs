@@ -40,3 +40,11 @@ pub fn work_tree_root(path: &Path) -> Result<String, String> {
         .trim()
         .to_string())
 }
+
+/// Absolute Git metadata directory for a working tree. Unlike `path/.git`,
+/// this also resolves linked worktrees, where `.git` is a text file.
+pub fn git_dir(path: &Path) -> Result<String, String> {
+    Ok(run_git(path, &["rev-parse", "--absolute-git-dir"])?
+        .trim()
+        .to_string())
+}

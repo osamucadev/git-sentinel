@@ -1,8 +1,10 @@
 mod commands;
+mod watch;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .manage(watch::WatchRegistry::default())
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_store::Builder::new().build())
@@ -10,6 +12,8 @@ pub fn run() {
             commands::validate_repository,
             commands::inspect_repository,
             commands::fetch_repository,
+            commands::watch_repository,
+            commands::unwatch_repository,
             commands::open_in_terminal,
             commands::open_folder,
         ])

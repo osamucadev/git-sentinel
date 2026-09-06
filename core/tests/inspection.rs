@@ -4,7 +4,7 @@ use std::fs;
 use std::path::Path;
 use std::process::Command;
 
-use git_sentinel_core::git::is_work_tree;
+use git_sentinel_core::git::{git_dir, is_work_tree};
 use git_sentinel_core::inspect::{inspect, inspect_with_reference};
 
 fn git(dir: &Path, args: &[&str]) {
@@ -140,6 +140,22 @@ fn repository_without_remote_still_inspects() {
     assert_eq!(state.tracking_divergence.is_none(), true);
     assert_eq!(state.reference_branch.as_deref(), Some("main"));
     assert_eq!(state.reference_branches, vec!["main"]);
+}
+
+#[test]
+fn linked_worktree_resolves_git_metadata_outside_its_git_file() {
+    let repo = new_repo();
+    commit_file(repo.path(), "a.txt", "one", "initial");
+    let linked = repo.path().join("linked-worktree");
+    git(
+        repo.path(),
+        &["worktree", "add", "-q", "-b", "linked", linked.to_str().unwrap()],
+    );
+
+    assert!(linked.join(".git").is_file());
+    let metadata = git_dir(&linked).unwrap();
+    assert!(Path::new(&metadata).is_dir());
+    assert_ne!(Path::new(&metadata), linked.join(".git"));
 }
 
 #[test]

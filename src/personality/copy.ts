@@ -4,6 +4,7 @@
 
 import type { Dict } from "../i18n/en";
 import { fill, greetingPart } from "../i18n";
+import type { FleetSummary, HeadlineKey } from "../fleet";
 import type { Personality } from "../types";
 
 export type GreetingOpts = {
@@ -39,6 +40,54 @@ export function personaGreeting(p: Personality, d: Dict, o: GreetingOpts): strin
       return who ? `${word}, ${who}.` : `${word}.`;
     }
   }
+}
+
+export type FleetOpts = {
+  summary: FleetSummary;
+  /** Up to a handful of the repositories that need attention, most severe first. */
+  attentionRepos: Array<{ name: string; headline: HeadlineKey }>;
+};
+
+/** The interpretation line(s) at the top of HQ. `line` is always present;
+ * `detail` is an optional second sentence some personalities add. */
+export function personaFleet(p: Personality, d: Dict, o: FleetOpts): { line: string; detail?: string } {
+  const n = o.summary.attention;
+  const base =
+    n === 0 ? d.hq.allClear : n === 1 ? d.hq.attentionOne : fill(d.hq.attentionMany, { n });
+
+  switch (p) {
+    case "technical":
+      return { line: base };
+    case "cute":
+      return {
+        line: base,
+        detail:
+          o.summary.modified > 0
+            ? fill(d.hq.modifiedNote, { n: o.summary.modified })
+            : undefined,
+      };
+    case "scifi":
+      return { line: base.toUpperCase() };
+    case "jarbas": {
+      const named = o.attentionRepos.slice(0, 2).map((r) =>
+        fill("{name} — {what}", { name: r.name, what: d.status[r.headline].toLowerCase() }),
+      );
+      return { line: base, detail: named.length > 0 ? `${named.join(". ")}.` : undefined };
+    }
+  }
+}
+
+/** A compact, factual one-line summary of the whole fleet. */
+export function fleetSummaryLine(d: Dict, s: FleetSummary): string {
+  const parts: string[] = [`${s.total} ${d.hq.repositories}`];
+  if (s.healthy > 0) parts.push(`${s.healthy} ${d.fleetSummary.healthy}`);
+  if (s.modified > 0) parts.push(`${s.modified} ${d.fleetSummary.modified}`);
+  if (s.diverged > 0) parts.push(`${s.diverged} ${d.fleetSummary.diverged}`);
+  if (s.behind > 0) parts.push(`${s.behind} ${d.fleetSummary.behind}`);
+  if (s.ahead > 0) parts.push(`${s.ahead} ${d.fleetSummary.ahead}`);
+  if (s.unavailable > 0) parts.push(`${s.unavailable} ${d.fleetSummary.unavailable}`);
+  if (s.stale > 0) parts.push(`${s.stale} ${d.fleetSummary.neverFetched}`);
+  return parts.join(" · ");
 }
 
 /** A short, personality-flavored summary of the repository set. Numbers are facts. */

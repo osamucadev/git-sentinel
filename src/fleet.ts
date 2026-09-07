@@ -3,8 +3,6 @@
 // filter and narrate. Every personality renders from the `RepoStatus` this
 // produces — none of them re-derive Git facts.
 //
-// Design reference: GIT-SENTINEL-UX-REDESIGN.md sections 6, 7, 11.
-
 import type { Divergence, RepositoryState } from "./types";
 
 /** Upstream refs older than this are drawn with reduced visual authority

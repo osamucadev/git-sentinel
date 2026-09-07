@@ -6,6 +6,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Added
+
+- Snap packaging: a versioned `snap/snapcraft.yaml` that builds Git Sentinel
+  from source with classic confinement. Not yet published to the Snap Store.
+
 ## [0.1.0] - 2026-09-06
 
 First public Linux release of Git Sentinel.

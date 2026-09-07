@@ -22,6 +22,7 @@ license: MIT
 website: https://github.com/osamucadev/git-sentinel
 source-code: https://github.com/osamucadev/git-sentinel
 issues: https://github.com/osamucadev/git-sentinel/issues
+contact: https://github.com/osamucadev/git-sentinel/issues
 
 # classic confinement: Git Sentinel is a local-first developer tool. It must run
 # the host `git` with the user's own configuration, credentials and SSH keys

@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Git Sentinel
+Comment=Local-first desktop command center for your Git repositories
+Exec=git-sentinel
+Icon=${SNAP}/meta/gui/git-sentinel.png
+Terminal=false
+Categories=Development;
+StartupWMClass=git-sentinel

@@ -25,3 +25,10 @@ dist-ssr
 
 # Rust
 /target
+
+# Snap
+/*.snap
+/snap/.snapcraft/
+/parts/
+/stage/
+/prime/

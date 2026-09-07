@@ -70,8 +70,14 @@ parts:
       set -eu
       rustup default stable
       npm ci
-      npm run build
-      cargo build --release --locked --manifest-path src-tauri/Cargo.toml
+      # Build through the Tauri CLI, exactly like the .deb / AppImage pipeline.
+      # A bare `cargo build` leaves the `tauri/custom-protocol` feature off, so
+      # `tauri-build` sets `dev = true` and the packaged binary loads `devUrl`
+      # (http://localhost:1420) instead of the embedded `frontendDist` assets.
+      # `--no-bundle` compiles the release binary but skips the deb/appimage
+      # bundlers, which the Snap does not use. It runs `beforeBuildCommand`
+      # (`npm run build`) itself. Trailing args after `--` go to cargo.
+      npm run tauri -- build --no-bundle -- --locked
       install -Dm755 target/release/git-sentinel \
         "$CRAFT_PART_INSTALL/bin/git-sentinel"
       install -Dm644 src-tauri/icons/icon.png \

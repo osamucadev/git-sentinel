@@ -4,9 +4,10 @@ import { Onboarding } from "./screens/Onboarding";
 import { Hq } from "./screens/Hq";
 import { RepositoryDetails } from "./screens/RepositoryDetails";
 import { Settings } from "./screens/Settings";
+import { About } from "./screens/About";
 import "./personality/themes.css";
 
-type View = { name: "hq" } | { name: "details"; path: string } | { name: "settings" };
+type View = { name: "hq" } | { name: "details"; path: string } | { name: "about" } | { name: "settings" };
 
 function Shell() {
   const app = useApp();
@@ -37,18 +38,22 @@ function Shell() {
           <button className="ghost" onClick={() => setView({ name: "hq" })}>
             {d.common.hq}
           </button>
+          <button className="ghost" onClick={() => setView({ name: "about" })}>
+            {d.common.about}
+          </button>
           <button className="ghost" onClick={() => setView({ name: "settings" })}>
             {d.common.settings}
           </button>
         </div>
       </header>
 
-      {view.name === "hq" && (
+      <div hidden={view.name !== "hq"}>
         <Hq onOpenDetails={(path) => setView({ name: "details", path })} />
-      )}
+      </div>
       {view.name === "details" && (
         <RepositoryDetails path={view.path} onBack={() => setView({ name: "hq" })} />
       )}
+      {view.name === "about" && <About />}
       {view.name === "settings" && <Settings onBack={() => setView({ name: "hq" })} />}
     </div>
   );

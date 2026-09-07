@@ -4,6 +4,7 @@
 import { invoke } from "@tauri-apps/api/core";
 import { listen, type UnlistenFn } from "@tauri-apps/api/event";
 import { open } from "@tauri-apps/plugin-dialog";
+import { openUrl } from "@tauri-apps/plugin-opener";
 import type { RepositoryState } from "./types";
 
 /** Native folder picker. Returns the chosen absolute path, or null if cancelled. */
@@ -46,4 +47,9 @@ export function openInTerminal(path: string): Promise<void> {
 
 export function openFolder(path: string): Promise<void> {
   return invoke("open_folder", { path });
+}
+
+/** Opens a web or mail URL with the system's configured application. */
+export function openExternalUrl(url: string): Promise<void> {
+  return openUrl(url);
 }

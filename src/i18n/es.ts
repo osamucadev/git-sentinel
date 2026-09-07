@@ -12,7 +12,7 @@ export const es: Dict = {
     refresh: "Actualizar",
     fetch: "Fetch",
     fetchAll: "Fetch en todos",
-    settings: "Ajustes",
+    settings: "Configuración",
     hq: "Cuartel general",
     about: "Acerca de",
     loading: "Cargando…",
@@ -283,7 +283,7 @@ export const es: Dict = {
     trackingDivergence: "Divergencia de remote-tracking",
   },
   settings: {
-    title: "Ajustes",
+    title: "Configuración",
     personality: "Personalidad",
     language: "Idioma",
     preferredName: "Nombre preferido",

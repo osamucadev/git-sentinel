@@ -15,7 +15,7 @@ describe("About", () => {
     expect(es.common.about).toBe("Acerca de");
     expect(en.common.settings).toBe("Settings");
     expect(ptBR.common.settings).toBe("Configurações");
-    expect(es.common.settings).toBe("Ajustes");
+    expect(es.common.settings).toBe("Configuración");
   });
 
   it("shows ownership, installed version, acknowledgements, and all project links", () => {

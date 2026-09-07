@@ -21,6 +21,7 @@ First public Linux release of Git Sentinel.
 - Local Git metadata watching with debounce: external local Git changes re-inspect only the affected repository without automatic fetches or Git hooks.
 - Non-blocking Fetch and Fetch All operations, with bounded concurrency and an activity strip that reports progress, completion, and failures.
 - English, Brazilian Portuguese, and Spanish interfaces.
+- Localized Headquarters navigation plus an About screen with installed version, authorship, project links, contact information, and acknowledgements.
 - Eight visual personalities using the same Git facts and behavior: Technical, Cute, Sci-Fi, Jarbas, Retro, Line Art, Pixel Art, and Modern Glass.
 - An official neutral application icon plus runtime personality icon variants, applied on a best-effort basis while the application is running.
 - Safe repository registration and removal: removing a repository from Sentinel never deletes its directory or Git history.

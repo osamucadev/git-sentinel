@@ -43,7 +43,7 @@ The optional **Reference** signal compares the current branch with the project's
 
 ### Freshness
 
-Remote-tracking data is a local snapshot. Sentinel shows when it last fetched remote refs, because ahead/behind values do not prove the live state of a server. Sentinel never fetches automatically.
+Remote-tracking data is a local snapshot. Sentinel shows when it last fetched remote refs, because ahead/behind values do not prove the live state of a server. Automatic Fetch is optional, disabled by default, and only runs while the app is open.
 
 ## Actions and activity
 
@@ -54,6 +54,10 @@ Refresh re-inspects one repository using local Git information. It does not use 
 ### Fetch and Fetch all
 
 Fetch updates remote-tracking refs for one repository. Fetch all performs the same work across the fleet with a small concurrency limit. Network commands run outside the GUI event loop, so the application remains scrollable and navigable while an operation is running.
+
+### Push and read-only review
+
+Push is an explicit normal `git push` action for a branch with commits waiting for its configured upstream. Git Sentinel never uses force. Repository Details can also list changed files and show staged plus unstaged diffs without writing to the working tree or index.
 
 The activity strip reports inspection and fetch progress, including completed items, failures, and an active repository. During conflicting work, affected actions can be disabled, but navigation remains available.
 
@@ -71,7 +75,7 @@ English, Brazilian Portuguese, and Spanish are included. Git refs, paths, hashes
 
 ## Safety model
 
-Git Sentinel is an observer. It does not offer pull, push, checkout, merge, rebase, reset, stash, or branch-creation actions. It does not write Git hooks into registered repositories.
+Git Sentinel is an observer with one explicit publishing action: normal Push. It does not offer pull, checkout, merge, rebase, reset, stash, or branch-creation actions. It does not write Git hooks into registered repositories.
 
 Fetch is the only network-facing Git operation. It updates tracking references but never integrates remote changes into a working branch.
 
@@ -83,7 +87,7 @@ The app is currently developed for Linux, especially Debian and Ubuntu environme
 
 Current boundaries:
 
-- no automatic remote fetch or remote polling;
+- automatic Fetch is opt-in and runs only while the app is open; no remote polling service;
 - no desktop notifications, tray integration, or background scheduler;
 - no cloud synchronization or hosted account;
 - terminal launch depends on an installed compatible terminal emulator;

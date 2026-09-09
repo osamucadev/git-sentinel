@@ -6,6 +6,27 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-09-09
+
+### Added
+
+- A startup progress screen that makes restoring registered repositories and local inspections visible while Git Sentinel prepares the fleet.
+- Safe normal Push from Headquarters and Repository Details. It uses the configured upstream and never uses force.
+- Read-only changed-file list and staged plus unstaged Git diff in Repository Details.
+- A configurable automatic Fetch option with 15, 30, and 60 minute intervals. It is off by default and never performs pull or push.
+- A comparison-base help tooltip that explains the current branch, configured base, and commits unique to each side.
+
+### Changed
+
+- Replaced ambiguous reference arrows with readable comparison-base facts such as commits only on your branch and commits only on the base.
+- Renamed the product-facing "reference branch" language to "comparison base" where it describes the configured comparison.
+- Overnight English greetings now use a neutral greeting instead of "Good morning".
+
+### Fixed
+
+- Initial state restoration no longer presents an empty generic loading surface while repository inspection is underway.
+- Large diffs are capped before rendering so a single file cannot make the interface unresponsive.
+
 ### Added
 
 - Snap packaging: a versioned `snap/snapcraft.yaml` that builds Git Sentinel
@@ -55,5 +76,6 @@ First public Linux release of Git Sentinel.
 - The application does not provide pull, push, checkout, merge, rebase, reset, branch creation, stash, desktop notifications, or tray support.
 - Runtime window-icon changes can be ignored by the active Linux desktop environment or compositor; the official neutral icon remains the fallback.
 
-[Unreleased]: https://github.com/osamucadev/git-sentinel/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/osamucadev/git-sentinel/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/osamucadev/git-sentinel/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/osamucadev/git-sentinel/releases/tag/v0.1.0

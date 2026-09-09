@@ -43,7 +43,7 @@ O sinal opcional **Referência** compara a branch atual com a branch de referên
 
 ### Atualidade
 
-Dados de tracking remoto são um retrato local. O Sentinel mostra quando as refs remotas foram buscadas pela última vez, pois números de à frente/atrás não comprovam o estado atual de um servidor. O Sentinel nunca executa fetch automaticamente.
+Dados de tracking remoto são um retrato local. O Sentinel mostra quando as refs remotas foram buscadas pela última vez, pois números de à frente/atrás não comprovam o estado atual de um servidor. O Fetch automático é opcional, começa desativado e só funciona enquanto o app está aberto.
 
 ## Ações e atividade
 
@@ -54,6 +54,10 @@ Atualizar re-inspeciona um repositório usando apenas informação Git local. N�
 ### Fetch e Fetch em todos
 
 Fetch atualiza as refs de tracking remoto de um repositório. Fetch em todos executa o mesmo trabalho pela fleet com limite pequeno de concorrência. Comandos de rede são executados fora do event loop gráfico; o aplicativo continua rolável e navegável durante a operação.
+
+### Push e revisão somente leitura
+
+Push é uma ação explícita de `git push` normal para uma branch com commits aguardando o upstream configurado. Git Sentinel nunca usa force. Repository Details também lista arquivos alterados e mostra diffs staged e unstaged sem escrever na working tree ou no index.
 
 A faixa de atividade mostra progresso de inspeções e fetches, incluindo concluídos, falhas e um repositório ativo. Ações conflitantes podem ser desabilitadas temporariamente, mas a navegação continua disponível.
 
@@ -71,7 +75,7 @@ Há suporte a inglês, português do Brasil e espanhol. Refs, caminhos, hashes e
 
 ## Modelo de segurança
 
-O Git Sentinel é um observador. Não oferece pull, push, checkout, merge, rebase, reset, stash ou criação de branch. Também não instala hooks Git nos repositórios registrados.
+O Git Sentinel é um observador com uma ação explícita de publicação: Push normal. Não oferece pull, checkout, merge, rebase, reset, stash ou criação de branch. Também não instala hooks Git nos repositórios registrados.
 
 Fetch é a única operação Git que usa rede. Ele atualiza referências de tracking, mas nunca integra mudanças remotas à branch de trabalho.
 
@@ -83,7 +87,7 @@ O aplicativo é desenvolvido atualmente para Linux, em especial ambientes Debian
 
 Limites atuais:
 
-- sem fetch automático, polling remoto ou scheduler em segundo plano;
+- Fetch automático é opt-in e só funciona com o app aberto; sem serviço de polling remoto;
 - sem notificações desktop, tray ou conta hospedada;
 - sem sincronização na nuvem;
 - a abertura de terminal depende de um emulador compatível instalado;

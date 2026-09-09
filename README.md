@@ -18,7 +18,7 @@ It observes Git. It does not take ownership of your repositories.
 - Know which branch is checked out before working in the wrong directory.
 - Separate three useful facts: **local working tree**, **branch upstream**, and **project reference**.
 - Notice local Git changes automatically without polling remotes or installing hooks.
-- Fetch without freezing the desktop interface.
+- Fetch and Push without freezing the desktop interface.
 - Use the same Git facts through eight genuinely different visual personalities.
 
 ## Gallery
@@ -64,7 +64,9 @@ Git Sentinel distinguishes local inspection from network activity:
 
 - **Refresh** re-inspects local Git state only.
 - Local Git metadata changes are watched with a small Linux-first debounce, so an external commit or edit refreshes only the affected repository.
-- **Fetch** and **Fetch all** update remote-tracking refs only. They never pull, push, checkout, merge, rebase, reset, or modify your working branch.
+- **Fetch** and **Fetch all** update remote-tracking refs only. They never pull, checkout, merge, rebase, reset, or modify your working branch.
+- **Automatic Fetch** is optional, off by default, and only runs while the app is open. It never performs pull or push.
+- **Push** is explicit, normal, and never forced. It is available only when your current branch has commits waiting for its configured upstream.
 - Network work runs away from the GUI event loop and reports progress in the activity strip, keeping the application navigable and scrollable.
 
 ### Personalities and language
@@ -124,7 +126,7 @@ Registering a repository does not modify it. Removing one from Sentinel removes 
 - Linux is the only supported platform today; Windows and macOS are not yet supported.
 - Git Sentinel observes local repositories only. It has no cloud account, synchronization service, tray icon, desktop notifications, or automatic remote fetch.
 - Remote-tracking information is a local snapshot from the most recent Sentinel fetch. It is not proof of live remote state.
-- Git Sentinel deliberately does not offer pull, push, checkout, merge, rebase, reset, branch creation, or stash actions.
+- Git Sentinel deliberately does not offer pull, checkout, merge, rebase, reset, branch creation, or stash actions.
 - Terminal launching depends on a compatible terminal emulator being available on the system.
 
 ## Contributing and forks

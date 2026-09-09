@@ -27,6 +27,8 @@ export function Onboarding() {
       language,
       preferredName: preferredName.trim(),
       formOfAddress: formOfAddress.trim(),
+      autoFetchEnabled: false,
+      autoFetchIntervalMinutes: 30,
     };
     void completeOnboarding(config);
   }

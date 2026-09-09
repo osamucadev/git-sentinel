@@ -196,6 +196,15 @@ code, .mono { font-family: var(--font-mono); }
 
 .app-shell { min-height: 100vh; display: flex; flex-direction: column; }
 
+.boot-splash { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 28px; background: var(--bg); color: var(--text); text-align: center; }
+.boot-mark { color: var(--accent); font-size: 42px; line-height: 1; text-shadow: var(--glow); }
+.boot-kicker { margin: 14px 0 4px; color: var(--accent); font: 700 11px var(--font-mono); letter-spacing: .12em; text-transform: uppercase; }
+.boot-splash h1 { font-size: 24px; }
+.boot-splash p:not(.boot-kicker) { color: var(--text-dim); margin: 8px 0 0; }
+.boot-progress { width: min(360px, 78vw); height: 5px; margin-top: 18px; background: var(--surface-2); overflow: hidden; border-radius: var(--radius); }
+.boot-progress i { display: block; height: 100%; background: var(--accent); min-width: 12px; transition: width .2s ease; box-shadow: var(--glow); }
+.boot-splash small { margin-top: 8px; color: var(--text-dim); font: 11px var(--font-mono); }
+
 .topbar {
   display: flex;
   align-items: center;
@@ -425,6 +434,7 @@ code, .mono { font-family: var(--font-mono); }
 .rr-fetch-error { margin-top: 6px; }
 
 .rr-actions { display: flex; gap: 4px; align-items: center; }
+.push-btn { padding: 5px 8px; font-size: 11px; line-height: 1; border-color: color-mix(in srgb, var(--ahead) 48%, var(--border)); color: var(--ahead); }
 .icon-btn {
   font-family: var(--font-mono); font-size: 12px; padding: 5px 8px; line-height: 1;
   border-color: var(--border);
@@ -449,6 +459,10 @@ code, .mono { font-family: var(--font-mono); }
 .menu-pop button:hover { background: var(--surface-2); }
 .menu-pop button.danger { color: var(--danger); }
 .menu-sep { height: 1px; background: var(--border); margin: 4px 0; }
+
+.reference-help { position: relative; display: inline-flex; align-items: center; }
+.reference-help-button { width: 16px; height: 16px; padding: 0; border-radius: 50%; font: 700 10px/1 var(--font-mono); color: var(--accent); border-color: var(--accent); background: transparent; }
+.reference-help-pop { position: absolute; z-index: 40; left: 0; bottom: calc(100% + 7px); width: min(340px, 72vw); display: flex; flex-direction: column; gap: 7px; padding: 10px 11px; border: 1px solid var(--border-strong); border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow); color: var(--text); font-size: 12px; line-height: 1.4; }
 
 /* ============================================================
    Semantic Git topology
@@ -603,6 +617,22 @@ code, .mono { font-family: var(--font-mono); }
 .branch-list li:last-child { border-bottom: none; }
 .branch-list li.current { color: var(--accent); font-weight: 600; }
 ul { margin: 0; padding: 0; }
+.changes-layout { display: grid; grid-template-columns: minmax(220px, .8fr) minmax(0, 1.7fr); gap: 12px; }
+.change-list { display: flex; flex-direction: column; border: 1px solid var(--border); border-radius: var(--radius); max-height: 340px; overflow: auto; }
+.change-list button { border: 0; border-radius: 0; border-bottom: 1px solid var(--border); padding: 7px 9px; display: flex; gap: 8px; align-items: center; text-align: left; min-width: 0; }
+.change-list button:last-child { border-bottom: 0; }
+.change-list button.selected { background: var(--accent-weak); }
+.change-list button span { flex: 0 0 68px; font: 10px var(--font-mono); color: var(--text-dim); text-transform: uppercase; }
+.change-list button span[data-change="added"], .change-list button span[data-change="untracked"] { color: var(--clean); }
+.change-list button span[data-change="deleted"], .change-list button span[data-change="conflicted"] { color: var(--danger); }
+.change-list code { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.diff-view { min-height: 160px; border: 1px solid var(--border); border-radius: var(--radius); padding: 9px; overflow: auto; background: var(--surface-2); }
+.diff-view p { margin: 0; }
+.diff-view pre { margin: 0; font: 11px/1.45 var(--font-mono); white-space: pre-wrap; overflow-wrap: anywhere; }
+.toggle-row { display: inline-flex !important; align-items: center; gap: 8px; color: var(--text) !important; text-transform: none !important; letter-spacing: normal !important; cursor: pointer; }
+.toggle-row input { width: auto; }
+.interval-row { display: flex !important; gap: 10px; align-items: center; max-width: 260px; text-transform: none !important; letter-spacing: normal !important; }
+.interval-row select { width: 110px; }
 
 /* Modal */
 .modal-backdrop {

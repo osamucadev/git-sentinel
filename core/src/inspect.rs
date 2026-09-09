@@ -1,4 +1,4 @@
-use std::path::Path;
+use std::path::{Component, Path};
 
 use crate::git::{is_work_tree, run_git, work_tree_root};
 use crate::model::*;
@@ -469,4 +469,92 @@ pub fn fetch(path: &str) -> Result<(), String> {
     }
     run_git(p, &["fetch", "--all", "--no-tags", "--prune"])?;
     Ok(())
+}
+
+/// Pushes the current branch using Git's normal configured upstream. No force
+/// option is ever passed. Network waiting remains the caller's responsibility.
+pub fn push(path: &str) -> Result<(), String> {
+    let p = Path::new(path);
+    if !is_work_tree(p) {
+        return Err(format!("{path} is not a Git repository"));
+    }
+    let upstream = run_git(p, &["rev-parse", "--abbrev-ref", "--symbolic-full-name", "@{u}"])?;
+    if upstream.trim().is_empty() {
+        return Err("no upstream is configured for the current branch".into());
+    }
+    run_git(p, &["push"])?;
+    Ok(())
+}
+
+/// Lists changed paths from Git's porcelain output. `--no-renames` keeps each
+/// record single-path and makes this compact parser safe for the UI.
+pub fn changed_files(path: &str) -> Result<Vec<ChangedFile>, String> {
+    let p = Path::new(path);
+    if !is_work_tree(p) {
+        return Err(format!("{path} is not a Git repository"));
+    }
+    let output = run_git(
+        p,
+        &["status", "--porcelain=v1", "-z", "--untracked-files=all", "--no-renames"],
+    )?;
+    Ok(output
+        .split('\0')
+        .filter_map(|record| {
+            if record.len() < 4 || record.starts_with("!!") {
+                return None;
+            }
+            let xy = &record[..2];
+            let file = record[3..].to_string();
+            let status = if xy == "??" {
+                "untracked"
+            } else if xy.contains('U') {
+                "conflicted"
+            } else if xy.contains('D') {
+                "deleted"
+            } else if xy.contains('A') {
+                "added"
+            } else {
+                "modified"
+            };
+            Some(ChangedFile { path: file, status: status.to_string() })
+        })
+        .collect())
+}
+
+const MAX_DIFF_BYTES: usize = 300_000;
+
+/// Reads staged and unstaged text diff for a changed path. It never writes to
+/// the worktree or index. Untracked files deliberately have no diff because
+/// Git has no base content for them yet.
+pub fn file_diff(path: &str, file: &str) -> Result<FileDiff, String> {
+    let p = Path::new(path);
+    if !is_work_tree(p) {
+        return Err(format!("{path} is not a Git repository"));
+    }
+    let relative = Path::new(file);
+    if relative.is_absolute() || relative.components().any(|part| matches!(part, Component::ParentDir)) {
+        return Err("file path must remain inside the repository".into());
+    }
+    let files = changed_files(path)?;
+    let Some(changed) = files.iter().find(|changed| changed.path == file) else {
+        return Err("file is not currently changed".into());
+    };
+    if changed.status == "untracked" {
+        return Ok(FileDiff { path: file.to_string(), content: String::new(), untracked: true, truncated: false });
+    }
+    let staged = run_git(p, &["diff", "--cached", "--no-ext-diff", "--unified=3", "--", file])?;
+    let unstaged = run_git(p, &["diff", "--no-ext-diff", "--unified=3", "--", file])?;
+    let mut content = [staged, unstaged]
+        .into_iter()
+        .filter(|part| !part.trim().is_empty())
+        .collect::<Vec<_>>()
+        .join("\n");
+    let truncated = content.len() > MAX_DIFF_BYTES;
+    if truncated {
+        let mut end = MAX_DIFF_BYTES;
+        while !content.is_char_boundary(end) { end -= 1; }
+        content.truncate(end);
+        content.push_str("\n\n… diff truncated by Git Sentinel …\n");
+    }
+    Ok(FileDiff { path: file.to_string(), content, untracked: false, truncated })
 }

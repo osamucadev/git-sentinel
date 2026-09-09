@@ -1,4 +1,4 @@
-import { Fragment, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import { useApp, useDict } from "../state/AppState";
 import { fill, relativeTime } from "../i18n";
 import { deriveStatus } from "../fleet";
@@ -7,6 +7,8 @@ import { headlineText } from "../personality/topology";
 import { repositoryNarrative } from "../narrative";
 import { repositoryActionsDisabled } from "../activity";
 import * as api from "../api";
+import type { ChangedFile, FileDiff } from "../types";
+import { ReferenceHelp } from "../components/ReferenceHelp";
 
 export function RepositoryDetails({ path, onBack }: { path: string; onBack: () => void }) {
   const app = useApp();
@@ -14,10 +16,24 @@ export function RepositoryDetails({ path, onBack }: { path: string; onBack: () =
   const p = app.config.personality;
   const operationActive = repositoryActionsDisabled(app.activity);
   const [filter, setFilter] = useState("");
+  const [changes, setChanges] = useState<ChangedFile[] | null>(null);
+  const [changesError, setChangesError] = useState<string | null>(null);
+  const [selectedFile, setSelectedFile] = useState<string | null>(null);
+  const [diff, setDiff] = useState<FileDiff | null>(null);
+  const [diffLoading, setDiffLoading] = useState(false);
 
   const repo = app.repos.find((r) => r.path === path);
   const s = repo?.state;
   const status = useMemo(() => (repo ? deriveStatus(repo) : null), [repo]);
+
+  useEffect(() => {
+    setChanges(null);
+    setChangesError(null);
+    setSelectedFile(null);
+    setDiff(null);
+    if (!repo?.state || repo.state.workingTree.clean) return;
+    void api.listRepositoryChanges(path).then(setChanges).catch((error) => setChangesError(String(error)));
+  }, [path, repo?.state?.workingTree.clean, repo?.state?.workingTree.staged, repo?.state?.workingTree.modified, repo?.state?.workingTree.deleted, repo?.state?.workingTree.untracked, repo?.state?.workingTree.conflicted]);
 
   const branches = useMemo(() => {
     const names = s?.localBranches.names ?? [];
@@ -47,6 +63,11 @@ export function RepositoryDetails({ path, onBack }: { path: string; onBack: () =
           <button onClick={() => void app.fetchOne(path)} disabled={repo.fetching || operationActive}>
             {repo.fetching ? <span className="spin" /> : d.common.fetch}
           </button>
+          {s?.upstream && (
+            <button onClick={() => void app.pushOne(path)} disabled={operationActive || repo.pushing || (s.trackingDivergence?.ahead ?? 0) === 0}>
+              {repo.pushing ? <span className="spin" /> : d.common.push}
+            </button>
+          )}
         </div>
       </div>
 
@@ -82,6 +103,15 @@ export function RepositoryDetails({ path, onBack }: { path: string; onBack: () =
                       ahead: status.reference.rel.kind === "ahead" || status.reference.rel.kind === "diverged" ? status.reference.rel.ahead : 0,
                       behind: status.reference.rel.kind === "behind" || status.reference.rel.kind === "diverged" ? status.reference.rel.behind : 0,
                     })}
+                    {s.currentBranch && (
+                      <ReferenceHelp
+                        branch={s.currentBranch}
+                        reference={status.reference.ref}
+                        ahead={status.reference.rel.kind === "ahead" || status.reference.rel.kind === "diverged" ? status.reference.rel.ahead : 0}
+                        behind={status.reference.rel.kind === "behind" || status.reference.rel.kind === "diverged" ? status.reference.rel.behind : 0}
+                        d={d}
+                      />
+                    )}
                   </span>
                 ) : (
                   <span className="muted">{d.details2.noReference}</span>
@@ -149,6 +179,46 @@ export function RepositoryDetails({ path, onBack }: { path: string; onBack: () =
               </section>
             )}
           </div>
+
+          {!wt!.clean && (
+            <section className="detail-section changes-section">
+              <h3>{d.details.changes}</h3>
+              {changes === null && !changesError && <p className="muted">{d.details.loadingChanges}</p>}
+              {changesError && <p className="fetch-error">{changesError}</p>}
+              {changes?.length === 0 && <p className="muted">{d.details.noChanges}</p>}
+              {changes && changes.length > 0 && (
+                <div className="changes-layout">
+                  <div className="change-list">
+                    {changes.map((change) => (
+                      <button
+                        key={change.path}
+                        className={selectedFile === change.path ? "selected" : ""}
+                        onClick={() => {
+                          setSelectedFile(change.path);
+                          setDiff(null);
+                          setDiffLoading(true);
+                          void api.repositoryFileDiff(path, change.path)
+                            .then(setDiff)
+                            .catch((error) => setChangesError(String(error)))
+                            .finally(() => setDiffLoading(false));
+                        }}
+                      >
+                        <span data-change={change.status}>{change.status}</span>
+                        <code>{change.path}</code>
+                      </button>
+                    ))}
+                  </div>
+                  <div className="diff-view" aria-live="polite">
+                    {!selectedFile && <p className="muted">{d.details.diff}</p>}
+                    {diffLoading && <p className="muted">{d.common.loading}</p>}
+                    {diff?.untracked && <p className="muted">{d.details.untrackedDiff}</p>}
+                    {diff && !diff.untracked && <pre>{diff.content || d.details.noChanges}</pre>}
+                    {diff?.truncated && <p className="muted">{d.details.diffTruncated}</p>}
+                  </div>
+                </div>
+              )}
+            </section>
+          )}
 
           <section className="detail-section">
             <h3>{d.details.branches} · {s.localBranches.count}</h3>

@@ -5,6 +5,7 @@ import { Hq } from "./screens/Hq";
 import { RepositoryDetails } from "./screens/RepositoryDetails";
 import { Settings } from "./screens/Settings";
 import { About } from "./screens/About";
+import { BootSplash } from "./components/BootSplash";
 import "./personality/themes.css";
 
 type View = { name: "hq" } | { name: "details"; path: string } | { name: "about" } | { name: "settings" };
@@ -14,8 +15,8 @@ function Shell() {
   const d = useDict();
   const [view, setView] = useState<View>({ name: "hq" });
 
-  if (!app.ready) {
-    return <div className="content">{d.common.loading}</div>;
+  if (!app.ready || app.boot.phase !== "complete") {
+    return <BootSplash boot={app.boot} d={d} />;
   }
 
   if (!app.config.onboarded) {

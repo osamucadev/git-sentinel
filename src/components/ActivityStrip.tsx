@@ -4,9 +4,9 @@ import type { Activity } from "../activity";
 import type { Personality } from "../types";
 
 function operationTitle(activity: Activity, p: Personality, d: Dict): string {
-  if (p === "scifi" && activity.kind.startsWith("fetch")) return d.activity.scifiFetch;
-  if (p === "cute" && activity.kind.startsWith("fetch")) return d.activity.cuteFetch;
-  if (p === "jarbas" && activity.kind.startsWith("fetch")) return d.activity.jarbasFetch;
+  if (p === "scifi" && (activity.kind === "fetch" || activity.kind === "fetchAll" || activity.kind === "autoFetch")) return d.activity.scifiFetch;
+  if (p === "cute" && (activity.kind === "fetch" || activity.kind === "fetchAll" || activity.kind === "autoFetch")) return d.activity.cuteFetch;
+  if (p === "jarbas" && (activity.kind === "fetch" || activity.kind === "fetchAll" || activity.kind === "autoFetch")) return d.activity.jarbasFetch;
   return d.activity[activity.kind];
 }
 

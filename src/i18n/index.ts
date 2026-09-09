@@ -26,11 +26,12 @@ export function fill(template: string, vars: Record<string, string | number>): s
   );
 }
 
-type Part = "morning" | "afternoon" | "evening";
+type Part = "night" | "morning" | "afternoon" | "evening";
 
 /** Local-time greeting word. Deterministic; no AI. */
 export function greetingPart(now: Date): Part {
   const h = now.getHours();
+  if (h < 5) return "night";
   if (h < 12) return "morning";
   if (h < 18) return "afternoon";
   return "evening";

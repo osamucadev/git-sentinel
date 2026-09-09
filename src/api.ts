@@ -5,7 +5,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { listen, type UnlistenFn } from "@tauri-apps/api/event";
 import { open } from "@tauri-apps/plugin-dialog";
 import { openUrl } from "@tauri-apps/plugin-opener";
-import type { RepositoryState } from "./types";
+import type { ChangedFile, FileDiff, RepositoryState } from "./types";
 
 /** Native folder picker. Returns the chosen absolute path, or null if cancelled. */
 export async function pickFolder(): Promise<string | null> {
@@ -26,6 +26,21 @@ export function inspectRepository(path: string, referenceBranch?: string): Promi
 /** Explicit fetch of remote-tracking refs. */
 export function fetchRepository(path: string): Promise<void> {
   return invoke("fetch_repository", { path });
+}
+
+/** Explicit normal push. The native command never passes force flags. */
+export function pushRepository(path: string): Promise<void> {
+  return invoke("push_repository", { path });
+}
+
+/** Read-only working-tree file list. */
+export function listRepositoryChanges(path: string): Promise<ChangedFile[]> {
+  return invoke("list_repository_changes", { path });
+}
+
+/** Read-only staged plus unstaged diff for one changed path. */
+export function repositoryFileDiff(path: string, file: string): Promise<FileDiff> {
+  return invoke("repository_file_diff", { path, file });
 }
 
 /** Starts/stops native local-state watching; it never fetches from a remote. */

@@ -87,7 +87,9 @@ describe("repository narrative", () => {
     });
     const story = repositoryRowStory({ state: repo, status: deriveStatus({ state: repo, loading: false }) }, en);
     expect(story.signals).toContainEqual(expect.objectContaining({ dimension: "upstream", state: "synced" }));
-    expect(story.signals).toContainEqual(expect.objectContaining({ dimension: "reference", state: "diverged", label: "↑10 ↓245 reference" }));
+    expect(story.signals).toContainEqual(expect.objectContaining({
+      dimension: "reference", state: "diverged", label: "10 only on your branch · 245 only on the base", ahead: 10, behind: 245,
+    }));
     expect(story.summary).toBe("Synced with upstream, but differs from reference origin/homolog.");
   });
 

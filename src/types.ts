@@ -39,6 +39,18 @@ export type RepositoryState = {
   trackingDivergence: Divergence | null;
 };
 
+export type ChangedFile = {
+  path: string;
+  status: "modified" | "added" | "deleted" | "untracked" | "conflicted";
+};
+
+export type FileDiff = {
+  path: string;
+  content: string;
+  untracked: boolean;
+  truncated: boolean;
+};
+
 export type Personality = "technical" | "cute" | "scifi" | "jarbas" | "retro" | "lineart" | "pixel" | "glass";
 export type Language = "en" | "pt-BR" | "es";
 
@@ -49,6 +61,8 @@ export type SentinelConfig = {
   language: Language;
   preferredName: string;
   formOfAddress: string;
+  autoFetchEnabled: boolean;
+  autoFetchIntervalMinutes: 15 | 30 | 60;
 };
 
 // One registered repository: just a path plus Sentinel-only metadata.
@@ -64,4 +78,6 @@ export const DEFAULT_CONFIG: SentinelConfig = {
   language: "en",
   preferredName: "",
   formOfAddress: "",
+  autoFetchEnabled: false,
+  autoFetchIntervalMinutes: 30,
 };

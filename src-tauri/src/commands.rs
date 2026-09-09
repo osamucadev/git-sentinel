@@ -2,7 +2,7 @@ use std::path::Path;
 
 use git_sentinel_core::git::{git_dir, is_work_tree, work_tree_root};
 use git_sentinel_core::inspect;
-use git_sentinel_core::model::RepositoryState;
+use git_sentinel_core::model::{ChangedFile, FileDiff, RepositoryState};
 use git_sentinel_core::system;
 
 /// Validates that `path` is a real Git working tree and returns the
@@ -37,6 +37,29 @@ pub async fn fetch_repository(path: String) -> Result<(), String> {
     tauri::async_runtime::spawn_blocking(move || inspect::fetch(&path))
         .await
         .map_err(|e| format!("fetch task failed: {e}"))?
+}
+
+/// Explicit normal push. This never uses force and is kept off the GUI event
+/// runtime because network or credentials may take time.
+#[tauri::command]
+pub async fn push_repository(path: String) -> Result<(), String> {
+    tauri::async_runtime::spawn_blocking(move || inspect::push(&path))
+        .await
+        .map_err(|e| format!("push task failed: {e}"))?
+}
+
+#[tauri::command]
+pub async fn list_repository_changes(path: String) -> Result<Vec<ChangedFile>, String> {
+    tauri::async_runtime::spawn_blocking(move || inspect::changed_files(&path))
+        .await
+        .map_err(|e| format!("changes task failed: {e}"))?
+}
+
+#[tauri::command]
+pub async fn repository_file_diff(path: String, file: String) -> Result<FileDiff, String> {
+    tauri::async_runtime::spawn_blocking(move || inspect::file_diff(&path, &file))
+        .await
+        .map_err(|e| format!("diff task failed: {e}"))?
 }
 
 #[tauri::command]

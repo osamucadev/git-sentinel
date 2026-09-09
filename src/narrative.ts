@@ -18,6 +18,9 @@ export type RowSignal = {
   mark: string;
   label: string;
   detail?: string;
+  reference?: string;
+  ahead?: number;
+  behind?: number;
 };
 
 export type RepositoryRowStory = {
@@ -93,10 +96,16 @@ function signalRelation(
 ): RowSignal {
   const label = dimension === "upstream" ? d.rowNarrative.upstreamLabel : d.rowNarrative.referenceLabel;
   const detail = dimension === "reference" ? fill(d.rowNarrative.referenceAgainst, { ref }) : ref;
+  if (dimension === "reference") {
+    if (rel.kind === "synced") return { dimension, state: "synced", mark: "✓", label, detail, reference: ref, ahead: 0, behind: 0 };
+    if (rel.kind === "ahead") return { dimension, state: "ahead", mark: "•", label: fill(d.rowNarrative.branchOnly, { n: rel.ahead }), detail, reference: ref, ahead: rel.ahead, behind: 0 };
+    if (rel.kind === "behind") return { dimension, state: "behind", mark: "•", label: fill(d.rowNarrative.baseOnly, { n: rel.behind }), detail, reference: ref, ahead: 0, behind: rel.behind };
+    return { dimension, state: "diverged", mark: "•", label: `${fill(d.rowNarrative.branchOnly, { n: rel.ahead })} · ${fill(d.rowNarrative.baseOnly, { n: rel.behind })}`, detail, reference: ref, ahead: rel.ahead, behind: rel.behind };
+  }
   if (rel.kind === "synced") return { dimension, state: "synced", mark: "✓", label, detail };
-  if (rel.kind === "ahead") return { dimension, state: "ahead", mark: "↑", label: `↑${rel.ahead} ${label}`, detail };
-  if (rel.kind === "behind") return { dimension, state: "behind", mark: "↓", label: `↓${rel.behind} ${label}`, detail };
-  return { dimension, state: "diverged", mark: "↕", label: `↑${rel.ahead} ↓${rel.behind} ${label}`, detail };
+  if (rel.kind === "ahead") return { dimension, state: "ahead", mark: "↑", label: `${rel.ahead} ${label}`, detail };
+  if (rel.kind === "behind") return { dimension, state: "behind", mark: "↓", label: `${rel.behind} ${label}`, detail };
+  return { dimension, state: "diverged", mark: "↕", label: fill(d.rowNarrative.diverged, { ref, ahead: rel.ahead, behind: rel.behind }), detail };
 }
 
 function rowSummary(state: RepositoryState, status: RepoStatus, d: Dict): string {

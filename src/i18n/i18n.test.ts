@@ -13,7 +13,8 @@ describe("fill", () => {
 });
 
 describe("greetingPart", () => {
-  it("maps hours to morning/afternoon/evening", () => {
+  it("uses a neutral greeting overnight and maps daytime hours", () => {
+    expect(greetingPart(new Date("2026-01-01T01:00:00"))).toBe("night");
     expect(greetingPart(new Date("2026-01-01T08:00:00"))).toBe("morning");
     expect(greetingPart(new Date("2026-01-01T13:00:00"))).toBe("afternoon");
     expect(greetingPart(new Date("2026-01-01T21:00:00"))).toBe("evening");

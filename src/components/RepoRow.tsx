@@ -7,6 +7,7 @@ import type { Personality } from "../types";
 import * as api from "../api";
 import { headlineText } from "../personality/topology";
 import { repositoryRowStory } from "../narrative";
+import { ReferenceHelp } from "./ReferenceHelp";
 
 function stop(e: React.MouseEvent) {
   e.stopPropagation();
@@ -20,6 +21,7 @@ export function RepoRow({
   onOpenDetails,
   onRefresh,
   onFetch,
+  onPush,
   onRemove,
   operationsBusy,
 }: {
@@ -30,6 +32,7 @@ export function RepoRow({
   onOpenDetails: () => void;
   onRefresh: () => void;
   onFetch: () => void;
+  onPush?: () => void;
   onRemove: () => void;
   operationsBusy: boolean;
 }) {
@@ -82,6 +85,9 @@ export function RepoRow({
                   <b aria-hidden="true">{signal.mark}</b>
                   <span>{signal.label}</span>
                   {signal.detail && <small>{signal.detail}</small>}
+                  {signal.dimension === "reference" && signal.reference && s?.currentBranch && (
+                    <ReferenceHelp branch={s.currentBranch} reference={signal.reference} ahead={signal.ahead ?? 0} behind={signal.behind ?? 0} d={d} />
+                  )}
                 </span>
               ))}
             </div>
@@ -107,6 +113,16 @@ export function RepoRow({
       </div>
 
       <div className="rr-actions" onClick={stop}>
+        {s?.upstream && (
+          <button
+            className="push-btn"
+            title={d.common.push}
+            disabled={operationsBusy || repo.pushing || (s.trackingDivergence?.ahead ?? 0) === 0}
+            onClick={onPush}
+          >
+            {repo.pushing ? <span className="spin" /> : d.common.push}
+          </button>
+        )}
         <button
           className="icon-btn"
           title={d.card.openInTerminal}

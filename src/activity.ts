@@ -1,4 +1,4 @@
-export type ActivityKind = "fetch" | "fetchAll" | "refresh" | "startup";
+export type ActivityKind = "fetch" | "fetchAll" | "autoFetch" | "push" | "refresh" | "startup";
 export type ActivityPhase = "running" | "complete";
 
 export type Activity = {

@@ -73,3 +73,22 @@ pub struct Remote {
     pub name: String,
     pub url: Option<String>,
 }
+
+/// A changed path reported by Git. This is intentionally a read-only view of
+/// the working tree, suitable for the UI's file list and diff viewer.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ChangedFile {
+    pub path: String,
+    pub status: String,
+}
+
+/// Content returned for a single read-only diff request.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct FileDiff {
+    pub path: String,
+    pub content: String,
+    pub untracked: bool,
+    pub truncated: bool,
+}

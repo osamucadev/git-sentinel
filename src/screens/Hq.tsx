@@ -211,6 +211,10 @@ export function Hq({ onOpenDetails }: { onOpenDetails: (path: string) => void })
                     const r = await app.fetchOne(e.repo.path);
                     if (!r.ok) setToast({ msg: `${d.errors.fetchFailed}: ${r.error}`, kind: "error" });
                   }}
+                  onPush={async () => {
+                    const result = await app.pushOne(e.repo.path);
+                    if (!result.ok) setToast({ msg: `${d.errors.pushFailed}: ${result.error}`, kind: "error" });
+                  }}
                   onRemove={() => setConfirmRemove(e.repo.path)}
                   operationsBusy={operationActive}
                 />

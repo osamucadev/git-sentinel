@@ -66,6 +66,32 @@ export function Settings({ onBack }: { onBack: () => void }) {
         />
       </div>
 
+      <div className="field settings-auto-fetch">
+        <label>{d.settings.automaticFetch}</label>
+        <label className="toggle-row">
+          <input
+            type="checkbox"
+            checked={app.config.autoFetchEnabled}
+            onChange={(e) => update("autoFetchEnabled", e.target.checked)}
+          />
+          <span>{d.settings.automaticFetch}</span>
+        </label>
+        <p className="hint">{d.settings.automaticFetchHint}</p>
+        {app.config.autoFetchEnabled && (
+          <label className="interval-row">
+            <span>{d.settings.automaticFetchInterval}</span>
+            <select
+              value={app.config.autoFetchIntervalMinutes}
+              onChange={(e) => update("autoFetchIntervalMinutes", Number(e.target.value) as 15 | 30 | 60)}
+            >
+              <option value={15}>15 min</option>
+              <option value={30}>30 min</option>
+              <option value={60}>60 min</option>
+            </select>
+          </label>
+        )}
+      </div>
+
       {saved && (
         <Toast message={d.settings.saved} kind="ok" onDismiss={() => setSaved(false)} />
       )}

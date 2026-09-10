@@ -1,6 +1,6 @@
 name: git-sentinel
 title: Git Sentinel
-version: '0.2.0'
+version: '0.2.1'
 summary: Local-first desktop command center for your Git repositories
 description: |
   Git Sentinel gives developers one calm, scannable place to see what is

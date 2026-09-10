@@ -80,13 +80,14 @@ export function Hq({ onOpenDetails }: { onOpenDetails: (path: string) => void })
   for (const e of visible) grouped[e.status.group].push(e);
 
   async function addRepository() {
-    const folder = await api.pickFolder();
-    if (!folder) return;
+    const folders = await api.pickFolders();
+    if (folders.length === 0) return;
     setBusy(true);
-    const result = await app.addRepo(folder);
+    const result = await app.addRepos(folders);
     setBusy(false);
-    if (!result.ok) {
-      setToast({ msg: d.errors[result.error as "notAGitRepo"], kind: "error" });
+    if (result.invalid > 0 || result.duplicates > 0) {
+      const msg = result.invalid > 0 ? d.errors.notAGitRepo : d.errors.alreadyRegistered;
+      setToast({ msg, kind: "error" });
     }
   }
 

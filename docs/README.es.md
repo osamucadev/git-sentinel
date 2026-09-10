@@ -15,9 +15,9 @@ Git Sentinel es una aplicación de escritorio Linux, local-first, para observar 
 
 ## Primeros pasos
 
-En el primer inicio, elige una personalidad visual, el idioma de la interfaz y cómo debe llamarte Sentinel. Añade repositorios Git locales desde HQ. Sentinel valida la carpeta antes de registrarla y guarda solamente la ruta y sus propias preferencias.
+En el primer inicio, elige una personalidad visual, el idioma de la interfaz y cómo debe llamarte Sentinel. Añade una o varias carpetas de repositorios Git locales desde HQ. Sentinel valida cada carpeta antes de registrarla, omite duplicados y guarda solamente las rutas y sus propias preferencias.
 
-La inspección inicial es local. Mientras un repositorio todavía no devuelve un resultado, aparece como cargando; nunca se cuenta como saludable solo porque la inspección está pendiente.
+La inspección inicial es local y ocurre detrás de una pantalla nativa de inicio. Mientras un repositorio todavía no devuelve un resultado, aparece como cargando; nunca se cuenta como saludable solo porque la inspección está pendiente.
 
 ## Cómo leer el estado de un repositorio
 
@@ -65,7 +65,7 @@ La franja de actividad informa progreso de inspecciones y fetches, incluidos com
 
 - **Abrir en Terminal** abre la ruta del repositorio en un emulador de terminal disponible.
 - **Abrir carpeta** abre el directorio en el gestor de archivos.
-- **Quitar de Sentinel** elimina solamente el registro guardado por Sentinel. Nunca elimina el repositorio ni modifica su historial Git.
+- **Quitar de Sentinel** elimina solamente el registro guardado por Sentinel. Nunca elimina el repositorio ni modifica su historial Git. Si una carpeta registrada se elimina fuera de Sentinel, su entrada sigue visible como no disponible hasta que decidas quitarla.
 
 ## Personalidades e idiomas
 

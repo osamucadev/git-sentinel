@@ -6,6 +6,21 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-09-09
+
+### Added
+
+- Native startup splash screen shown while Git Sentinel restores saved local repositories. It explains that only local state is being read and avoids exposing an empty application window.
+- Multi-folder repository selection. Chosen folders are still validated one by one, duplicates are skipped, and no parent directory is scanned implicitly.
+- Back navigation from Settings and About, returning to the repository detail currently being viewed when applicable.
+
+### Fixed
+
+- Native Git watcher setup now runs outside Tauri's GUI runtime. Restoring many registered repositories no longer performs Git metadata resolution or recursive watcher registration on the graphical event loop.
+- Comparison-base help tooltips wrap their text within the available surface instead of overflowing repository rows.
+- The top navigation order is now Headquarters, Settings, then About.
+- A repository deleted outside Sentinel remains registered as unavailable. Sentinel never recreates it, removes it automatically, or touches its Git history.
+
 ## [0.2.0] - 2026-09-09
 
 ### Added
@@ -76,6 +91,7 @@ First public Linux release of Git Sentinel.
 - The application does not provide pull, push, checkout, merge, rebase, reset, branch creation, stash, desktop notifications, or tray support.
 - Runtime window-icon changes can be ignored by the active Linux desktop environment or compositor; the official neutral icon remains the fallback.
 
-[Unreleased]: https://github.com/osamucadev/git-sentinel/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/osamucadev/git-sentinel/compare/v0.2.1...HEAD
+[0.2.1]: https://github.com/osamucadev/git-sentinel/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/osamucadev/git-sentinel/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/osamucadev/git-sentinel/releases/tag/v0.1.0

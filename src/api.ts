@@ -13,6 +13,13 @@ export async function pickFolder(): Promise<string | null> {
   return typeof result === "string" ? result : null;
 }
 
+/** Native multi-folder picker. The chosen folders are validated individually. */
+export async function pickFolders(): Promise<string[]> {
+  const result = await open({ directory: true, multiple: true });
+  if (typeof result === "string") return [result];
+  return result ?? [];
+}
+
 /** Validates a folder with Git and returns the canonical working-tree root. */
 export function validateRepository(path: string): Promise<string> {
   return invoke("validate_repository", { path });
@@ -50,6 +57,11 @@ export function watchRepository(path: string): Promise<void> {
 
 export function unwatchRepository(path: string): Promise<void> {
   return invoke("unwatch_repository", { path });
+}
+
+/** Dismisses the native startup splash and reveals the already-rendered app. */
+export function finishStartup(): Promise<void> {
+  return invoke("finish_startup");
 }
 
 export function onRepositoryLocalChange(handler: (path: string) => void): Promise<UnlistenFn> {

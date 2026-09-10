@@ -15,9 +15,9 @@ Git Sentinel is a local-first Linux desktop application for observing several Gi
 
 ## Getting started
 
-On first launch, choose a visual personality, interface language, and preferred name. Add local Git repositories from HQ. Sentinel validates each selected folder before registering it and remembers only the path plus its own preferences.
+On first launch, choose a visual personality, interface language, and preferred name. Add one or several local Git repository folders from HQ. Sentinel validates every selected folder before registering it, skips duplicates, and remembers only paths plus its own preferences.
 
-The initial inspection runs locally. A repository that has not returned a result yet remains visibly loading; it is never counted as healthy just because inspection is pending.
+The initial inspection runs locally behind a native startup screen. A repository that has not returned a result yet remains visibly loading; it is never counted as healthy just because inspection is pending.
 
 ## Reading repository state
 
@@ -65,7 +65,7 @@ The activity strip reports inspection and fetch progress, including completed it
 
 - **Open in Terminal** opens the repository path in an available terminal emulator.
 - **Open folder** opens the repository directory in the system file manager.
-- **Remove from Sentinel** deletes only Sentinel's saved registration. It never deletes the repository or changes its Git history.
+- **Remove from Sentinel** deletes only Sentinel's saved registration. It never deletes the repository or changes its Git history. If a registered folder is removed outside Sentinel, its entry stays visible as unavailable until you decide to remove it.
 
 ## Personalities and languages
 
@@ -104,7 +104,7 @@ Git repository
   -> personality presentation
 ```
 
-The Rust core gathers Git facts through explicit Git command arguments and machine-readable output. It produces a normalized `RepositoryState`; the frontend derives fleet priority, human copy, signals, translations, and visual treatment from those facts. This keeps Git behavior separate from presentation.
+The Rust core gathers Git facts through explicit Git command arguments and machine-readable output. It produces a normalized `RepositoryState`; the frontend derives fleet priority, human copy, signals, translations, and visual treatment from those facts. Git inspection and native watcher setup run away from Tauri's GUI runtime, keeping startup and network work from blocking the application window.
 
 ## Contributing
 

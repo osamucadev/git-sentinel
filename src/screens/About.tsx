@@ -97,7 +97,7 @@ export function AboutContent({ d, version, onOpenExternal }: AboutContentProps) 
   );
 }
 
-export function About() {
+export function About({ onBack }: { onBack: () => void }) {
   const d = useDict();
   const [version, setVersion] = useState<string | null>(null);
 
@@ -105,5 +105,10 @@ export function About() {
     void readInstalledVersion().then(setVersion);
   }, []);
 
-  return <AboutContent d={d} version={version} onOpenExternal={(url) => void api.openExternalUrl(url)} />;
+  return (
+    <>
+      <div className="screen-toolbar content"><button onClick={onBack}>← {d.common.back}</button></div>
+      <AboutContent d={d} version={version} onOpenExternal={(url) => void api.openExternalUrl(url)} />
+    </>
+  );
 }

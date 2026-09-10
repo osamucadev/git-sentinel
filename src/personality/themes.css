@@ -462,7 +462,8 @@ code, .mono { font-family: var(--font-mono); }
 
 .reference-help { position: relative; display: inline-flex; align-items: center; }
 .reference-help-button { width: 16px; height: 16px; padding: 0; border-radius: 50%; font: 700 10px/1 var(--font-mono); color: var(--accent); border-color: var(--accent); background: transparent; }
-.reference-help-pop { position: absolute; z-index: 40; left: 0; bottom: calc(100% + 7px); width: min(340px, 72vw); display: flex; flex-direction: column; gap: 7px; padding: 10px 11px; border: 1px solid var(--border-strong); border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow); color: var(--text); font-size: 12px; line-height: 1.4; }
+.reference-help-pop { position: absolute; z-index: 40; left: 0; bottom: calc(100% + 7px); width: min(340px, 72vw); display: flex; flex-direction: column; gap: 7px; padding: 10px 11px; border: 1px solid var(--border-strong); border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow); color: var(--text); font-size: 12px; line-height: 1.4; white-space: normal; overflow-wrap: anywhere; text-align: left; }
+.reference-help-pop > span { display: block; }
 
 /* ============================================================
    Semantic Git topology

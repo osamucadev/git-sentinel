@@ -44,6 +44,23 @@ export type FetchAllSummary = {
 };
 
 type InspectResult = { ok: boolean; error?: string };
+export type AddReposResult = { added: number; invalid: number; duplicates: number };
+
+/** Deduplicates validated paths without touching disk or changing registration. */
+export function planRepositoryAdditions(candidates: string[], registeredPaths: string[]) {
+  const seen = new Set(registeredPaths);
+  const additions: string[] = [];
+  let duplicates = 0;
+  for (const path of candidates) {
+    if (seen.has(path)) {
+      duplicates += 1;
+    } else {
+      seen.add(path);
+      additions.push(path);
+    }
+  }
+  return { additions, duplicates };
+}
 
 /** Runs `task` over `items`, at most `limit` in flight at once. No framework:
  * a fixed pool of workers pulling from a shared index. */
@@ -76,6 +93,7 @@ type AppState = {
   updateConfig: (patch: Partial<SentinelConfig>) => Promise<void>;
   completeOnboarding: (config: SentinelConfig) => Promise<void>;
   addRepo: (path: string) => Promise<{ ok: true } | { ok: false; error: string }>;
+  addRepos: (paths: string[]) => Promise<AddReposResult>;
   removeRepo: (path: string) => Promise<void>;
   setReferenceBranch: (path: string, referenceBranch?: string) => Promise<void>;
   refreshOne: (path: string) => Promise<void>;
@@ -242,31 +260,36 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     await store.saveConfig(finalConfig);
   }, []);
 
-  const addRepo = useCallback(
-    async (rawPath: string): Promise<{ ok: true } | { ok: false; error: string }> => {
-      let canonical: string;
-      try {
-        canonical = await api.validateRepository(rawPath);
-      } catch {
-        return { ok: false, error: "notAGitRepo" };
-      }
-      let duplicate = false;
-      setRepos((prev) => {
-        if (prev.some((r) => r.path === canonical)) {
-          duplicate = true;
-          return prev;
-        }
-        const next = [...prev, { path: canonical, loading: true, fetching: false }];
-        persistRepos(next);
-        return next;
-      });
-      if (duplicate) return { ok: false, error: "alreadyRegistered" };
-      await inspect(canonical);
-      void api.watchRepository(canonical).catch(() => {});
-      return { ok: true };
-    },
-    [inspect, persistRepos],
-  );
+  const addRepos = useCallback(async (rawPaths: string[]): Promise<AddReposResult> => {
+    const validated: Array<{ path: string } | { error: "notAGitRepo" }> = await Promise.all(rawPaths.map(async (path) => {
+      try { return { path: await api.validateRepository(path) }; }
+      catch { return { error: "notAGitRepo" as const }; }
+    }));
+    const canonicalPaths = validated.flatMap((result) => "path" in result ? [result.path] : []);
+    const invalid = validated.filter((result) => "error" in result).length;
+    let additions: string[] = [];
+    let duplicates = 0;
+    setRepos((prev) => {
+      const planned = planRepositoryAdditions(canonicalPaths, prev.map((repo) => repo.path));
+      additions = planned.additions;
+      duplicates = planned.duplicates;
+      if (additions.length === 0) return prev;
+      const next = [...prev, ...additions.map((path) => ({ path, loading: true, fetching: false }))];
+      persistRepos(next);
+      return next;
+    });
+    await Promise.all(additions.map(async (path) => {
+      void api.watchRepository(path).catch(() => {});
+      await inspect(path);
+    }));
+    return { added: additions.length, invalid, duplicates };
+  }, [inspect, persistRepos]);
+
+  const addRepo = useCallback(async (path: string): Promise<{ ok: true } | { ok: false; error: string }> => {
+    const result = await addRepos([path]);
+    if (result.added === 1) return { ok: true };
+    return { ok: false, error: result.invalid ? "notAGitRepo" : "alreadyRegistered" };
+  }, [addRepos]);
 
   const removeRepo = useCallback(
     async (path: string) => {
@@ -400,6 +423,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
       updateConfig,
       completeOnboarding,
       addRepo,
+      addRepos,
       removeRepo,
       setReferenceBranch,
       refreshOne,
@@ -417,6 +441,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
       updateConfig,
       completeOnboarding,
       addRepo,
+      addRepos,
       removeRepo,
       setReferenceBranch,
       refreshOne,

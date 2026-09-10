@@ -1,10 +1,12 @@
 mod commands;
 mod watch;
 
+use std::sync::Arc;
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
-        .manage(watch::WatchRegistry::default())
+        .manage(Arc::new(watch::WatchRegistry::default()))
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_store::Builder::new().build())
@@ -17,6 +19,7 @@ pub fn run() {
             commands::repository_file_diff,
             commands::watch_repository,
             commands::unwatch_repository,
+            commands::finish_startup,
             commands::open_in_terminal,
             commands::open_folder,
         ])

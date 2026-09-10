@@ -1,4 +1,7 @@
 use std::path::Path;
+use std::sync::Arc;
+
+use tauri::Manager;
 
 use git_sentinel_core::git::{git_dir, is_work_tree, work_tree_root};
 use git_sentinel_core::inspect;
@@ -63,22 +66,43 @@ pub async fn repository_file_diff(path: String, file: String) -> Result<FileDiff
 }
 
 #[tauri::command]
-pub fn watch_repository(
+pub async fn watch_repository(
     app: tauri::AppHandle,
-    registry: tauri::State<'_, crate::watch::WatchRegistry>,
+    registry: tauri::State<'_, Arc<crate::watch::WatchRegistry>>,
     path: String,
 ) -> Result<(), String> {
-    let root = work_tree_root(Path::new(&path))?;
-    let metadata = git_dir(Path::new(&root))?;
-    registry.watch(app, root, metadata)
+    let registry = Arc::clone(&registry);
+    // Resolving an external worktree and registering recursive native watchers
+    // can touch a slow filesystem. It must never run on Tauri's GUI runtime.
+    tauri::async_runtime::spawn_blocking(move || {
+        let root = work_tree_root(Path::new(&path))?;
+        let metadata = git_dir(Path::new(&root))?;
+        registry.watch(app, root, metadata)
+    })
+    .await
+    .map_err(|e| format!("watch setup task failed: {e}"))?
 }
 
 #[tauri::command]
 pub fn unwatch_repository(
-    registry: tauri::State<'_, crate::watch::WatchRegistry>,
+    registry: tauri::State<'_, Arc<crate::watch::WatchRegistry>>,
     path: String,
 ) {
     registry.unwatch(&path);
+}
+
+/// Reveals the main window only after the renderer has restored its local
+/// state. The native splash remains responsive while startup work runs.
+#[tauri::command]
+pub fn finish_startup(app: tauri::AppHandle) -> Result<(), String> {
+    if let Some(splash) = app.get_webview_window("splashscreen") {
+        let _ = splash.close();
+    }
+    if let Some(main) = app.get_webview_window("main") {
+        main.show().map_err(|e| format!("could not show main window: {e}"))?;
+        let _ = main.set_focus();
+    }
+    Ok(())
 }
 
 #[tauri::command]

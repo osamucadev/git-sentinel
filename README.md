@@ -19,6 +19,7 @@ It observes Git. It does not take ownership of your repositories.
 - Separate three useful facts: **local working tree**, **branch upstream**, and **project reference**.
 - Notice local Git changes automatically without polling remotes or installing hooks.
 - Fetch and Push without freezing the desktop interface.
+- Restore saved repositories behind a native startup screen instead of a blank window.
 - Use the same Git facts through eight genuinely different visual personalities.
 
 ## Gallery
@@ -124,7 +125,7 @@ Registering a repository does not modify it. Removing one from Sentinel removes 
 ## Current limitations
 
 - Linux is the only supported platform today; Windows and macOS are not yet supported.
-- Git Sentinel observes local repositories only. It has no cloud account, synchronization service, tray icon, desktop notifications, or automatic remote fetch.
+- Git Sentinel has no cloud account, synchronization service, tray icon, or desktop notifications. Automatic Fetch is optional, disabled by default, and only runs while the app is open.
 - Remote-tracking information is a local snapshot from the most recent Sentinel fetch. It is not proof of live remote state.
 - Git Sentinel deliberately does not offer pull, checkout, merge, rebase, reset, branch creation, or stash actions.
 - Terminal launching depends on a compatible terminal emulator being available on the system.

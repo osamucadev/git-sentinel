@@ -15,9 +15,9 @@ O Git Sentinel é uma aplicação desktop Linux, local-first, para observar vár
 
 ## Primeiros passos
 
-Na primeira execução, escolha uma personalidade visual, o idioma da interface e como o Sentinel deve chamá-lo. Adicione repositórios Git locais pela HQ. O Sentinel valida a pasta selecionada antes de registrá-la e guarda somente o caminho e suas próprias preferências.
+Na primeira execução, escolha uma personalidade visual, o idioma da interface e como o Sentinel deve chamá-lo. Adicione uma ou várias pastas de repositórios Git locais pela HQ. O Sentinel valida cada pasta selecionada antes de registrá-la, ignora duplicadas e guarda somente os caminhos e suas próprias preferências.
 
-A inspeção inicial é local. Enquanto um repositório ainda não retornou resultado, ele aparece como carregando; nunca é contado como saudável apenas porque a inspeção está pendente.
+A inspeção inicial é local e acontece atrás de uma tela nativa de inicialização. Enquanto um repositório ainda não retornou resultado, ele aparece como carregando; nunca é contado como saudável apenas porque a inspeção está pendente.
 
 ## Como ler o estado de um repositório
 
@@ -65,7 +65,7 @@ A faixa de atividade mostra progresso de inspeções e fetches, incluindo conclu
 
 - **Abrir no Terminal** abre o caminho do repositório em um emulador de terminal disponível.
 - **Abrir pasta** abre o diretório no gerenciador de arquivos.
-- **Remover do Sentinel** remove apenas o registro salvo pelo Sentinel. Nunca remove o repositório nem altera seu histórico Git.
+- **Remover do Sentinel** remove apenas o registro salvo pelo Sentinel. Nunca remove o repositório nem altera seu histórico Git. Se uma pasta registrada for apagada fora do Sentinel, a entrada continua visível como indisponível até você decidir removê-la.
 
 ## Personalidades e idiomas
 

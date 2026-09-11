@@ -258,6 +258,7 @@ export const ptBR: Dict = {
     details: "Detalhes",
     openInTerminal: "Abrir no Terminal",
     openFolder: "Abrir pasta",
+    openInBrowser: "Abrir repositório no navegador",
     removeFromSentinel: "Remover do Sentinel",
     ahead: "à frente",
     behind: "atrás",

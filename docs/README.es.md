@@ -65,6 +65,7 @@ La franja de actividad informa progreso de inspecciones y fetches, incluidos com
 
 - **Abrir en Terminal** abre la ruta del repositorio en un emulador de terminal disponible.
 - **Abrir carpeta** abre el directorio en el gestor de archivos.
+- **Abrir repositorio en el navegador** solo está disponible cuando Sentinel puede mapear de forma segura un remote configurado de GitHub a su página. Los mapeos explícitos para GitLab, Bitbucket y Azure DevOps están previstos para el futuro.
 - **Quitar de Sentinel** elimina solamente el registro guardado por Sentinel. Nunca elimina el repositorio ni modifica su historial Git. Si una carpeta registrada se elimina fuera de Sentinel, su entrada sigue visible como no disponible hasta que decidas quitarla.
 
 ## Personalidades e idiomas

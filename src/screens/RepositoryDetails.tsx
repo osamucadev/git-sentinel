@@ -9,6 +9,7 @@ import { repositoryActionsDisabled } from "../activity";
 import * as api from "../api";
 import type { ChangedFile, FileDiff } from "../types";
 import { ReferenceHelp } from "../components/ReferenceHelp";
+import { repositoryBrowserUrl } from "../repositoryUrl";
 
 export function RepositoryDetails({ path, onBack }: { path: string; onBack: () => void }) {
   const app = useApp();
@@ -49,6 +50,7 @@ export function RepositoryDetails({ path, onBack }: { path: string; onBack: () =
       ? fill(d.topo.fetchedAgo, { time: relativeTime(repo.lastSuccessfulFetch, d) })
       : d.topo.neverFetched;
   const story = s ? repositoryNarrative({ state: s, status, lastSuccessfulFetch: repo.lastSuccessfulFetch }, d) : [];
+  const browserUrl = repositoryBrowserUrl(s?.remotes ?? []);
 
   return (
     <div className="content details">
@@ -59,6 +61,7 @@ export function RepositoryDetails({ path, onBack }: { path: string; onBack: () =
             {">_"}
           </button>
           <button onClick={() => void api.openFolder(path)}>{d.card.openFolder}</button>
+          {browserUrl && <button onClick={() => void api.openExternalUrl(browserUrl)}>{d.card.openInBrowser}</button>}
           <button onClick={() => void app.refreshOne(path)} disabled={operationActive || repo.loading}>{d.common.refresh}</button>
           <button onClick={() => void app.fetchOne(path)} disabled={repo.fetching || operationActive}>
             {repo.fetching ? <span className="spin" /> : d.common.fetch}

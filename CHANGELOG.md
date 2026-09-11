@@ -6,6 +6,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Added
+
+- A conditional “Open repository in browser” action for recognized GitHub remotes. SSH and HTTPS GitHub URLs are normalized to the repository page without changing the configured remote. GitLab, Bitbucket, and Azure DevOps support is documented as future work.
+
 ## [0.2.1] - 2026-09-09
 
 ### Added

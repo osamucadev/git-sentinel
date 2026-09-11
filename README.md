@@ -129,6 +129,7 @@ Registering a repository does not modify it. Removing one from Sentinel removes 
 - Remote-tracking information is a local snapshot from the most recent Sentinel fetch. It is not proof of live remote state.
 - Git Sentinel deliberately does not offer pull, checkout, merge, rebase, reset, branch creation, or stash actions.
 - Terminal launching depends on a compatible terminal emulator being available on the system.
+- Opening a repository page in a browser currently supports GitHub remotes only. Explicit GitLab, Bitbucket, and Azure DevOps URL support is planned.
 
 ## Contributing and forks
 

@@ -258,6 +258,7 @@ export const en = {
     details: "Details",
     openInTerminal: "Open in Terminal",
     openFolder: "Open folder",
+    openInBrowser: "Open repository in browser",
     removeFromSentinel: "Remove from Sentinel",
     ahead: "ahead",
     behind: "behind",

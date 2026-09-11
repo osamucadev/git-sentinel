@@ -8,6 +8,7 @@ import * as api from "../api";
 import { headlineText } from "../personality/topology";
 import { repositoryRowStory } from "../narrative";
 import { ReferenceHelp } from "./ReferenceHelp";
+import { repositoryBrowserUrl } from "../repositoryUrl";
 
 function stop(e: React.MouseEvent) {
   e.stopPropagation();
@@ -50,6 +51,7 @@ export function RepoRow({
   }, [menu]);
 
   const story = s ? repositoryRowStory({ state: s, status, lastSuccessfulFetch: repo.lastSuccessfulFetch }, d) : null;
+  const browserUrl = repositoryBrowserUrl(s?.remotes ?? []);
 
   return (
     <div
@@ -139,6 +141,11 @@ export function RepoRow({
               <button onClick={() => { setMenu(false); void api.openFolder(repo.path); }}>
                 {d.card.openFolder}
               </button>
+              {browserUrl && (
+                <button onClick={() => { setMenu(false); void api.openExternalUrl(browserUrl); }}>
+                  {d.card.openInBrowser}
+                </button>
+              )}
               <button
                 disabled={repo.fetching || operationsBusy}
                 onClick={() => { setMenu(false); onFetch(); }}

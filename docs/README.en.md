@@ -65,6 +65,7 @@ The activity strip reports inspection and fetch progress, including completed it
 
 - **Open in Terminal** opens the repository path in an available terminal emulator.
 - **Open folder** opens the repository directory in the system file manager.
+- **Open repository in browser** is available only when Sentinel can safely map a configured GitHub remote to its repository page. GitLab, Bitbucket, and Azure DevOps mappings are planned as explicit future support.
 - **Remove from Sentinel** deletes only Sentinel's saved registration. It never deletes the repository or changes its Git history. If a registered folder is removed outside Sentinel, its entry stays visible as unavailable until you decide to remove it.
 
 ## Personalities and languages

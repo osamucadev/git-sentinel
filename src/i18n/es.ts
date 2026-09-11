@@ -258,6 +258,7 @@ export const es: Dict = {
     details: "Detalles",
     openInTerminal: "Abrir en Terminal",
     openFolder: "Abrir carpeta",
+    openInBrowser: "Abrir repositorio en el navegador",
     removeFromSentinel: "Quitar de Sentinel",
     ahead: "adelante",
     behind: "atrás",

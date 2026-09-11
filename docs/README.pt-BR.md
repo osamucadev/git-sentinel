@@ -65,6 +65,7 @@ A faixa de atividade mostra progresso de inspeções e fetches, incluindo conclu
 
 - **Abrir no Terminal** abre o caminho do repositório em um emulador de terminal disponível.
 - **Abrir pasta** abre o diretório no gerenciador de arquivos.
+- **Abrir repositório no navegador** só fica disponível quando o Sentinel consegue mapear com segurança um remote configurado do GitHub para sua página. Mapeamentos explícitos para GitLab, Bitbucket e Azure DevOps estão planejados para o futuro.
 - **Remover do Sentinel** remove apenas o registro salvo pelo Sentinel. Nunca remove o repositório nem altera seu histórico Git. Se uma pasta registrada for apagada fora do Sentinel, a entrada continua visível como indisponível até você decidir removê-la.
 
 ## Personalidades e idiomas

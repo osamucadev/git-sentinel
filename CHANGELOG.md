@@ -6,6 +6,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-09-16
+
 ### Added
 
 - Read-only stash visibility. Inspections now include `git stash list` (index, hash, message, inferred source branch, and date). Repositories with stashes show a compact Headquarters signal and a narrative line naming the oldest stash's age; a stash is context and never changes a repository's health tier. Repository Details gains a Stashes section listing every entry with a read-only diff viewer. Diffs are requested by the stash's stable commit hash rather than the reorderable `stash@{N}` selector, the hash is validated before reaching Git, and the stash is re-checked to still exist before its diff is read. Nothing ever applies, pops, drops, or otherwise mutates a stash.
@@ -104,7 +106,8 @@ First public Linux release of Git Sentinel.
 - The application does not provide pull, push, checkout, merge, rebase, reset, branch creation, stash, desktop notifications, or tray support.
 - Runtime window-icon changes can be ignored by the active Linux desktop environment or compositor; the official neutral icon remains the fallback.
 
-[Unreleased]: https://github.com/osamucadev/git-sentinel/compare/v0.2.1...HEAD
+[Unreleased]: https://github.com/osamucadev/git-sentinel/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/osamucadev/git-sentinel/compare/v0.2.1...v0.3.0
 [0.2.1]: https://github.com/osamucadev/git-sentinel/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/osamucadev/git-sentinel/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/osamucadev/git-sentinel/releases/tag/v0.1.0

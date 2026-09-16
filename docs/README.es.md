@@ -57,7 +57,7 @@ Fetch actualiza las refs de tracking remoto de un repositorio. Fetch en todos re
 
 ### Push y revisión de solo lectura
 
-Push es una acción explícita de `git push` normal para una rama con commits esperando su upstream configurado. Git Sentinel nunca usa force. Repository Details también puede listar archivos modificados y mostrar diffs staged y unstaged sin escribir en el árbol de trabajo ni en el índice.
+Push es una acción explícita de `git push` normal para una rama con commits esperando su upstream configurado. Git Sentinel nunca usa force. Repository Details también puede listar archivos modificados y mostrar diffs staged y unstaged sin escribir en el árbol de trabajo ni en el índice. Los stashes guardados aparecen como contexto de solo lectura, cada uno con su rama de origen inferida y un diff identificado por el hash estable del commit del stash; Sentinel nunca aplica, extrae ni elimina un stash. Los diffs se muestran como líneas coloreadas con columnas de números de línea, usando la paleta de la propia personalidad activa.
 
 La franja de actividad informa progreso de inspecciones y fetches, incluidos completados, fallos y un repositorio activo. Las acciones incompatibles pueden deshabilitarse temporalmente, pero la navegación permanece disponible.
 

@@ -57,7 +57,7 @@ Healthy repositories stay compact. Repositories with local work, divergence, con
 
 ### Repository details
 
-Open a repository to inspect its branch, working tree, upstream and reference relationships, remotes, branches, and latest activity in more detail. The details view keeps the Git topology presentation where it is useful; HQ intentionally uses semantic signals instead of a Git graph.
+Open a repository to inspect its branch, working tree, upstream and reference relationships, saved stashes, remotes, branches, and latest activity in more detail. Changed files and stash entries open read-only, color-coded diffs. The details view keeps the Git topology presentation where it is useful; HQ intentionally uses semantic signals instead of a Git graph.
 
 ### Local refresh and network fetch
 
@@ -127,7 +127,7 @@ Registering a repository does not modify it. Removing one from Sentinel removes 
 - Linux is the only supported platform today; Windows and macOS are not yet supported.
 - Git Sentinel has no cloud account, synchronization service, tray icon, or desktop notifications. Automatic Fetch is optional, disabled by default, and only runs while the app is open.
 - Remote-tracking information is a local snapshot from the most recent Sentinel fetch. It is not proof of live remote state.
-- Git Sentinel deliberately does not offer pull, checkout, merge, rebase, reset, branch creation, or stash actions.
+- Git Sentinel deliberately does not offer pull, checkout, merge, rebase, reset, branch creation, or stash actions (stashes are listed read-only).
 - Terminal launching depends on a compatible terminal emulator being available on the system.
 - Opening a repository page in a browser currently supports GitHub remotes only. Explicit GitLab, Bitbucket, and Azure DevOps URL support is planned.
 

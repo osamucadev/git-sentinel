@@ -38,6 +38,16 @@
   --row-pad-y: 9px;
   --topo-line: 1px solid var(--border-strong);
   --chip-radius: 999px;
+
+  /* Diff viewer. Derived from each personality's own palette (clean/danger/
+     accent/text-dim), so every personality keeps its identity without
+     per-personality overrides. */
+  --diff-add-text: var(--clean);
+  --diff-add-bg: color-mix(in srgb, var(--clean) 13%, transparent);
+  --diff-del-text: var(--danger);
+  --diff-del-bg: color-mix(in srgb, var(--danger) 12%, transparent);
+  --diff-hunk-text: var(--text-dim);
+  --diff-hunk-bg: color-mix(in srgb, var(--accent) 9%, transparent);
 }
 
 /* ---------- Technical: clean, dense, developer-tool ---------- */
@@ -629,7 +639,23 @@ ul { margin: 0; padding: 0; }
 .change-list code { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .diff-view { min-height: 160px; border: 1px solid var(--border); border-radius: var(--radius); padding: 9px; overflow: auto; background: var(--surface-2); }
 .diff-view p { margin: 0; }
-.diff-view pre { margin: 0; font: 11px/1.45 var(--font-mono); white-space: pre-wrap; overflow-wrap: anywhere; }
+
+/* Structured diff rendering (see DiffView). Colors come from the --diff-*
+   tokens, which derive from each personality's own palette. */
+.diff-lines { font: 11px/1.55 var(--font-mono); }
+.diff-line { display: flex; align-items: baseline; border-radius: 3px; }
+.diff-gutter {
+  flex: 0 0 auto; min-width: 3ch; padding: 0 0.8ch 0 0.4ch; text-align: right;
+  color: var(--text-dim); opacity: 0.7; user-select: none;
+}
+.diff-marker { flex: 0 0 1.5ch; text-align: center; white-space: pre; user-select: none; }
+.diff-text { flex: 1; min-width: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+.diff-line--add { background: var(--diff-add-bg); color: var(--diff-add-text); }
+.diff-line--del { background: var(--diff-del-bg); color: var(--diff-del-text); }
+.diff-line--add .diff-gutter, .diff-line--del .diff-gutter { color: inherit; opacity: 0.6; }
+.diff-line--hunk { background: var(--diff-hunk-bg); color: var(--diff-hunk-text); margin: 2px 0; }
+.diff-line--meta, .diff-line--note { color: var(--text-dim); }
+.diff-line--note { font-style: italic; }
 .toggle-row { display: inline-flex !important; align-items: center; gap: 8px; color: var(--text) !important; text-transform: none !important; letter-spacing: normal !important; cursor: pointer; }
 .toggle-row input { width: auto; }
 .interval-row { display: flex !important; gap: 10px; align-items: center; max-width: 260px; text-transform: none !important; letter-spacing: normal !important; }

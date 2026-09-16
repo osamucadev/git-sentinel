@@ -9,6 +9,7 @@ import { repositoryActionsDisabled } from "../activity";
 import * as api from "../api";
 import type { ChangedFile, FileDiff, StashDiff } from "../types";
 import { ReferenceHelp } from "../components/ReferenceHelp";
+import { DiffView } from "../components/DiffView";
 import { repositoryBrowserUrl } from "../repositoryUrl";
 
 export function RepositoryDetails({ path, onBack }: { path: string; onBack: () => void }) {
@@ -225,7 +226,7 @@ export function RepositoryDetails({ path, onBack }: { path: string; onBack: () =
                     {!selectedFile && <p className="muted">{d.details.diff}</p>}
                     {diffLoading && <p className="muted">{d.common.loading}</p>}
                     {diff?.untracked && <p className="muted">{d.details.untrackedDiff}</p>}
-                    {diff && !diff.untracked && <pre>{diff.content || d.details.noChanges}</pre>}
+                    {diff && !diff.untracked && (diff.content ? <DiffView content={diff.content} /> : <p className="muted">{d.details.noChanges}</p>)}
                     {diff?.truncated && <p className="muted">{d.details.diffTruncated}</p>}
                   </div>
                 </div>
@@ -265,7 +266,7 @@ export function RepositoryDetails({ path, onBack }: { path: string; onBack: () =
                   {!selectedStashHash && <p className="muted">{d.details.stashDiffPlaceholder}</p>}
                   {stashDiffLoading && <p className="muted">{d.common.loading}</p>}
                   {stashDiffError && <p className="fetch-error">{stashDiffError}</p>}
-                  {stashDiff && <pre>{stashDiff.content || d.details.noChanges}</pre>}
+                  {stashDiff && (stashDiff.content ? <DiffView content={stashDiff.content} /> : <p className="muted">{d.details.noChanges}</p>)}
                   {stashDiff?.truncated && <p className="muted">{d.details.diffTruncated}</p>}
                 </div>
               </div>

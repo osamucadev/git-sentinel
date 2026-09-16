@@ -199,6 +199,8 @@ export const en = {
     conflicted: "{n} conflicted file(s) needing resolution",
     join: " · ",
     snapshot: "Remote tracking information is a local snapshot from Sentinel's last fetch: {time}.",
+    stashOne: "There is 1 stash saved on this repository, from {time}.",
+    stashMany: "There are {n} stashes saved on this repository, the oldest from {time}.",
   },
   rowNarrative: {
     localClean: "Local clean",
@@ -237,6 +239,9 @@ export const en = {
     join: " · ",
     freshness: "Remote refs checked by Sentinel {time}.",
     freshnessUnknown: "Remote refs have not been fetched by Sentinel yet.",
+    stashOne: "1 stash",
+    stashMany: "{n} stashes",
+    stashDetail: "oldest {time}",
   },
   card: {
     clean: "Clean",
@@ -293,6 +298,10 @@ export const en = {
     noChanges: "No changed files.",
     untrackedDiff: "This is a new untracked file, so Git has no diff yet.",
     diffTruncated: "This diff was shortened to keep the app responsive.",
+    stashes: "Stashes",
+    noStashes: "No stashes on this repository.",
+    stashDiffPlaceholder: "Select a stash to see its diff.",
+    stashBranchUnknown: "unknown branch",
   },
   settings: {
     title: "Settings",

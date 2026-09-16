@@ -26,6 +26,9 @@ pub struct RepositoryState {
     pub remotes: Vec<Remote>,
     pub upstream: Option<String>,
     pub tracking_divergence: Option<Divergence>,
+
+    /// Read-only view of `git stash list`. Never used to mutate the stash.
+    pub stashes: Vec<StashEntry>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -72,6 +75,32 @@ pub struct Divergence {
 pub struct Remote {
     pub name: String,
     pub url: Option<String>,
+}
+
+/// One entry from `git stash list`. `branch_hint` is inferred from the free-text
+/// reflog subject, not a resolved Git ref, and `reference` is only valid for the
+/// lifetime of this snapshot: the `stash@{N}` index shifts as stashes change.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct StashEntry {
+    pub index: u32,
+    pub reference: String,
+    pub hash: String,
+    pub message: String,
+    pub branch_hint: Option<String>,
+    /// ISO-8601 committer date.
+    pub date: String,
+}
+
+/// Content returned for a single read-only stash diff request. Identified by
+/// commit hash, not by the reorderable `stash@{N}` selector, so a caller can
+/// never be shown a diff for a different stash than the one it asked for.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct StashDiff {
+    pub hash: String,
+    pub content: String,
+    pub truncated: bool,
 }
 
 /// A changed path reported by Git. This is intentionally a read-only view of

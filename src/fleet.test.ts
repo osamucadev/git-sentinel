@@ -25,6 +25,7 @@ function state(over: Partial<RepositoryState> = {}): RepositoryState {
     remotes: [{ name: "origin", url: "git@x:/r.git" }],
     upstream: "origin/main",
     trackingDivergence: { ahead: 0, behind: 0, baseBranch: "origin/main" },
+    stashes: [],
     ...over,
   };
 }
@@ -211,6 +212,30 @@ describe("deriveStatus — freshness is context, never a tier input", () => {
     const st = deriveStatus(input({ lastSuccessfulFetch: recent }), NOW);
     expect(st.aging).toBe(false);
     expect(st.upstream).toMatchObject({ freshness: { kind: "fetched", aging: false } });
+  });
+});
+
+describe("deriveStatus — a stash is context, never a tier input", () => {
+  const stash = { index: 0, reference: "stash@{0}", hash: "aaa", message: "On main: work", branchHint: "main", date: "2026-01-01T00:00:00Z" };
+
+  it("a clean synced repo with a stash stays healthy but is flagged", () => {
+    const st = deriveStatus(input({ state: state({ stashes: [stash] }) }), NOW);
+    expect(st.tier).toBe("healthy");
+    expect(st.facts).toContain("has-stash");
+  });
+
+  it("a repo without stashes carries no has-stash fact", () => {
+    const st = deriveStatus(input(), NOW);
+    expect(st.facts).not.toContain("has-stash");
+  });
+
+  it("a stash never escalates severity beyond what the working tree already implies", () => {
+    const dirty = state({
+      stashes: [stash],
+      workingTree: { clean: false, staged: 1, modified: 0, deleted: 0, untracked: 0, conflicted: 0 },
+    });
+    const st = deriveStatus(input({ state: dirty }), NOW);
+    expect(st.tier).toBe("working");
   });
 });
 

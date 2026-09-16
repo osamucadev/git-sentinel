@@ -37,6 +37,31 @@ export type RepositoryState = {
   remotes: Array<{ name: string; url?: string }>;
   upstream: string | null;
   trackingDivergence: Divergence | null;
+  stashes: StashEntry[];
+};
+
+// One `git stash list` entry. `branchHint` is inferred from the free-text
+// reflog subject, not a resolved Git ref, and `reference` ("stash@{N}") is
+// only valid for the lifetime of this snapshot: the index shifts as stashes
+// change.
+export type StashEntry = {
+  index: number;
+  reference: string;
+  hash: string;
+  message: string;
+  branchHint: string | null;
+  date: string;
+};
+
+// Identified by the stash's stable commit hash, not the reorderable
+// `stash@{N}` selector: the backend re-validates the hash is still present
+// in `git stash list` immediately before reading this, so a stash dropped or
+// reordered between selection and this call fails clearly instead of
+// silently returning a different stash's content.
+export type StashDiff = {
+  hash: string;
+  content: string;
+  truncated: boolean;
 };
 
 export type ChangedFile = {

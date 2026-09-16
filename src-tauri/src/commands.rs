@@ -3,9 +3,9 @@ use std::sync::Arc;
 
 use tauri::Manager;
 
-use git_sentinel_core::git::{git_dir, is_work_tree, work_tree_root};
+use git_sentinel_core::git::{extra_watch_dirs, git_common_dir, git_dir, is_work_tree, work_tree_root};
 use git_sentinel_core::inspect;
-use git_sentinel_core::model::{ChangedFile, FileDiff, RepositoryState};
+use git_sentinel_core::model::{ChangedFile, FileDiff, RepositoryState, StashDiff};
 use git_sentinel_core::system;
 
 /// Validates that `path` is a real Git working tree and returns the
@@ -65,6 +65,15 @@ pub async fn repository_file_diff(path: String, file: String) -> Result<FileDiff
         .map_err(|e| format!("diff task failed: {e}"))?
 }
 
+/// Reads the diff of one stash entry, identified by its stable commit hash.
+/// Read-only: never applies, pops or drops the stash.
+#[tauri::command]
+pub async fn repository_stash_diff(path: String, hash: String) -> Result<StashDiff, String> {
+    tauri::async_runtime::spawn_blocking(move || inspect::stash_diff(&path, &hash))
+        .await
+        .map_err(|e| format!("stash diff task failed: {e}"))?
+}
+
 #[tauri::command]
 pub async fn watch_repository(
     app: tauri::AppHandle,
@@ -76,8 +85,11 @@ pub async fn watch_repository(
     // can touch a slow filesystem. It must never run on Tauri's GUI runtime.
     tauri::async_runtime::spawn_blocking(move || {
         let root = work_tree_root(Path::new(&path))?;
-        let metadata = git_dir(Path::new(&root))?;
-        registry.watch(app, root, metadata)
+        let root_path = Path::new(&root);
+        let metadata = git_dir(root_path)?;
+        let common_metadata = git_common_dir(root_path)?;
+        let extra = extra_watch_dirs(&root, &metadata, &common_metadata);
+        registry.watch(app, root, extra)
     })
     .await
     .map_err(|e| format!("watch setup task failed: {e}"))?

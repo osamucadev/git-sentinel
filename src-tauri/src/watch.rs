@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use std::sync::Mutex;
 
 use notify::{Config, RecommendedWatcher, RecursiveMode, Watcher};
@@ -14,7 +14,13 @@ pub struct WatchRegistry {
 }
 
 impl WatchRegistry {
-    pub fn watch(&self, app: AppHandle, root: String, git_dir: String) -> Result<(), String> {
+    /// `extra` is the pre-deduped set of additional directories to watch
+    /// beyond `root` (see `git::extra_watch_dirs`): a linked worktree's own
+    /// private Git directory, and/or the repository-wide common Git
+    /// directory where shared refs such as `refs/stash` live. Already
+    /// filtered against `root` and against each other by the caller, so this
+    /// never registers a redundant watch on the same path twice.
+    pub fn watch(&self, app: AppHandle, root: String, extra: Vec<String>) -> Result<(), String> {
         let mut watchers = self.watchers.lock().map_err(|_| "watch registry unavailable")?;
         if watchers.contains_key(&root) {
             return Ok(());
@@ -37,12 +43,9 @@ impl WatchRegistry {
             .watch(Path::new(&root), RecursiveMode::Recursive)
             .map_err(|e| format!("could not watch working tree: {e}"))?;
 
-        // A linked worktree stores important refs and index data outside its
-        // working-tree root, so watch its resolved Git directory as well.
-        let git_path = PathBuf::from(&git_dir);
-        if git_path != PathBuf::from(&root) {
+        for dir in &extra {
             watcher
-                .watch(&git_path, RecursiveMode::Recursive)
+                .watch(Path::new(dir), RecursiveMode::Recursive)
                 .map_err(|e| format!("could not watch Git metadata: {e}"))?;
         }
         watchers.insert(root, watcher);

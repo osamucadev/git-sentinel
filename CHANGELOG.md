@@ -8,7 +8,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ### Added
 
+- Read-only stash visibility. Inspections now include `git stash list` (index, hash, message, inferred source branch, and date). Repositories with stashes show a compact Headquarters signal and a narrative line naming the oldest stash's age; a stash is context and never changes a repository's health tier. Repository Details gains a Stashes section listing every entry with a read-only diff viewer. Diffs are requested by the stash's stable commit hash rather than the reorderable `stash@{N}` selector, the hash is validated before reaching Git, and the stash is re-checked to still exist before its diff is read. Nothing ever applies, pops, drops, or otherwise mutates a stash.
 - A conditional “Open repository in browser” action for recognized GitHub remotes. SSH and HTTPS GitHub URLs are normalized to the repository page without changing the configured remote. GitLab, Bitbucket, and Azure DevOps support is documented as future work.
+
+### Fixed
+
+- Local watching now also covers the repository-wide common Git directory, where shared refs such as `refs/stash` live, instead of only each worktree's private Git directory. Stash changes made from a linked worktree are now detected.
 
 ## [0.2.1] - 2026-09-09
 

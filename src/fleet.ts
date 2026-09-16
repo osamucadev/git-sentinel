@@ -40,7 +40,8 @@ export type Fact =
   | "behind-reference"
   | "diverged-reference"
   | "aging"
-  | "never-fetched";
+  | "never-fetched"
+  | "has-stash";
 
 /** One verdict key. Personalities choose the words; the key is fixed. */
 export type HeadlineKey =
@@ -162,6 +163,9 @@ export function deriveStatus(repo: FleetInput, now: number = Date.now()): RepoSt
   if (wt.conflicted > 0) facts.push("conflicted");
   if (nonConflictChanges > 0) facts.push("dirty");
   if (s.detachedHead) facts.push("detached");
+  // A stash is context, not an alert: it never changes `tier`, same
+  // principle already applied to "aging" above.
+  if (s.stashes.length > 0) facts.push("has-stash");
 
   // --- project reference position -----------------------------------------
   let reference: ReferencePosition | null = null;

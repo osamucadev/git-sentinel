@@ -199,6 +199,8 @@ export const ptBR: Dict = {
     conflicted: "{n} arquivo(s) em conflito precisando de resolução",
     join: " · ",
     snapshot: "As informações de tracking remoto são um retrato local do último fetch do Sentinel: {time}.",
+    stashOne: "Há 1 stash salvo neste repositório, de {time}.",
+    stashMany: "Há {n} stashes salvos neste repositório, o mais antigo de {time}.",
   },
   rowNarrative: {
     localClean: "Local limpo",
@@ -237,6 +239,9 @@ export const ptBR: Dict = {
     join: " · ",
     freshness: "Refs remotas verificadas pelo Sentinel {time}.",
     freshnessUnknown: "As refs remotas ainda não foram buscadas pelo Sentinel.",
+    stashOne: "1 stash",
+    stashMany: "{n} stashes",
+    stashDetail: "mais antigo: {time}",
   },
   card: {
     clean: "Limpo",
@@ -293,6 +298,10 @@ export const ptBR: Dict = {
     noChanges: "Nenhum arquivo alterado.",
     untrackedDiff: "Este é um arquivo novo e não rastreado, então o Git ainda não possui um diff.",
     diffTruncated: "Este diff foi reduzido para manter o aplicativo responsivo.",
+    stashes: "Stashes",
+    noStashes: "Este repositório não tem stashes.",
+    stashDiffPlaceholder: "Selecione um stash para ver o diff.",
+    stashBranchUnknown: "branch desconhecida",
   },
   settings: {
     title: "Configurações",

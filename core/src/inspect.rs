@@ -144,6 +144,56 @@ pub fn parse_ahead_behind(output: &str) -> (u32, u32) {
     (ahead, behind)
 }
 
+/// Parses `git stash list --format=%gd%x1f%H%x1f%cI%x1f%gs%x00` output. Pure
+/// function: no process calls. The NUL terminator (rather than newlines) keeps
+/// this safe against custom stash messages that embed their own line breaks.
+pub fn parse_stashes(output: &str) -> Vec<StashEntry> {
+    output
+        .split('\u{0}')
+        .map(|record| record.trim_matches('\n'))
+        .filter(|record| !record.is_empty())
+        .filter_map(|record| {
+            let mut parts = record.split('\u{1f}');
+            let (Some(reference), Some(hash), Some(date), Some(message)) =
+                (parts.next(), parts.next(), parts.next(), parts.next())
+            else {
+                return None;
+            };
+            let index = reference
+                .rsplit('{')
+                .next()
+                .and_then(|s| s.strip_suffix('}'))
+                .and_then(|s| s.parse().ok())
+                .unwrap_or(0);
+            Some(StashEntry {
+                index,
+                reference: reference.to_string(),
+                hash: hash.to_string(),
+                branch_hint: stash_branch_hint(message),
+                message: message.to_string(),
+                date: date.to_string(),
+            })
+        })
+        .collect()
+}
+
+/// Infers the branch a stash was created from out of Git's free-text reflog
+/// subject (`%gs`, e.g. "WIP on main: ..." or "On main: <custom message>").
+/// This is inference over free text, not a resolved Git ref: Git never
+/// records the source branch as structured data, and a detached-HEAD stash
+/// (`(no branch)`) has none to infer.
+pub fn stash_branch_hint(message: &str) -> Option<String> {
+    let rest = message
+        .strip_prefix("WIP on ")
+        .or_else(|| message.strip_prefix("On "))?;
+    let branch = rest.split(':').next()?.trim();
+    if branch.is_empty() || branch == "(no branch)" {
+        None
+    } else {
+        Some(branch.to_string())
+    }
+}
+
 fn parse_remotes(output: &str) -> Vec<Remote> {
     let mut remotes: Vec<Remote> = Vec::new();
     for line in output.lines() {
@@ -296,6 +346,16 @@ pub fn inspect_with_reference(
         base_branch: status.upstream.clone().unwrap_or_default(),
     });
 
+    // Read-only: `git stash list` never creates, applies or drops a stash. A
+    // failure here (corrupt repo, permissions) degrades to no stashes rather
+    // than failing the whole inspection.
+    let stashes = run_git(
+        root_path,
+        &["stash", "list", "--format=%gd%x1f%H%x1f%cI%x1f%gs%x00"],
+    )
+    .map(|out| parse_stashes(&out))
+    .unwrap_or_default();
+
     Ok(RepositoryState {
         path: root.clone(),
         name,
@@ -322,6 +382,7 @@ pub fn inspect_with_reference(
         remotes,
         upstream: status.upstream,
         tracking_divergence,
+        stashes,
     })
 }
 
@@ -458,6 +519,76 @@ u UU N... 100644 100644 100644 100644 aa bb cc dd both.txt
         // base...current -> "<behind>\t<ahead>"
         assert_eq!(parse_ahead_behind("2\t7\n"), (7, 2));
     }
+
+    #[test]
+    fn parses_empty_stash_list_as_no_entries() {
+        assert!(parse_stashes("").is_empty());
+    }
+
+    #[test]
+    fn parses_one_stash_entry() {
+        let out = "stash@{0}\u{1f}f0219a47a95ef19c251a6e302c2a9ced98190642\u{1f}2026-09-14T03:41:36-03:00\u{1f}WIP on main: 5e6d555 initial commit\u{0}\n";
+        let entries = parse_stashes(out);
+        assert_eq!(entries.len(), 1);
+        assert_eq!(entries[0].index, 0);
+        assert_eq!(entries[0].reference, "stash@{0}");
+        assert_eq!(entries[0].hash, "f0219a47a95ef19c251a6e302c2a9ced98190642");
+        assert_eq!(entries[0].date, "2026-09-14T03:41:36-03:00");
+        assert_eq!(entries[0].branch_hint.as_deref(), Some("main"));
+    }
+
+    #[test]
+    fn parses_multiple_stash_entries_preserving_order() {
+        let out = "stash@{0}\u{1f}aaa\u{1f}2026-09-14T00:00:00-03:00\u{1f}On main: with untracked\u{0}\n\
+                   stash@{1}\u{1f}bbb\u{1f}2026-09-13T00:00:00-03:00\u{1f}WIP on (no branch): 5e6d555 initial commit\u{0}\n\
+                   stash@{2}\u{1f}ccc\u{1f}2026-09-12T00:00:00-03:00\u{1f}On main: caf\u{e9} fix\u{0}\n";
+        let entries = parse_stashes(out);
+        assert_eq!(entries.len(), 3);
+        assert_eq!(entries[0].index, 0);
+        assert_eq!(entries[1].index, 1);
+        assert_eq!(entries[2].index, 2);
+        assert_eq!(entries[1].branch_hint, None);
+        assert_eq!(entries[2].message, "On main: caf\u{e9} fix");
+    }
+
+    #[test]
+    fn stash_branch_hint_reads_default_wip_message() {
+        assert_eq!(
+            stash_branch_hint("WIP on feature/x: 5e6d555 initial commit").as_deref(),
+            Some("feature/x")
+        );
+    }
+
+    #[test]
+    fn stash_branch_hint_reads_custom_message() {
+        assert_eq!(
+            stash_branch_hint("On main: café: fix ção — special chars 日本語").as_deref(),
+            Some("main")
+        );
+    }
+
+    #[test]
+    fn stash_branch_hint_is_none_on_detached_head() {
+        assert_eq!(stash_branch_hint("WIP on (no branch): 5e6d555 initial commit"), None);
+        assert_eq!(stash_branch_hint("On (no branch): custom message"), None);
+    }
+
+    #[test]
+    fn stash_branch_hint_is_none_for_unrecognized_shape() {
+        assert_eq!(stash_branch_hint("not a stash subject at all"), None);
+    }
+
+    #[test]
+    fn commit_hash_validation_accepts_only_well_formed_hex_hashes() {
+        assert!(is_valid_commit_hash(&"a".repeat(40)));
+        assert!(is_valid_commit_hash(&"a".repeat(64)));
+        assert!(!is_valid_commit_hash("--upload-pack=evil"));
+        assert!(!is_valid_commit_hash("stash@{0}"));
+        assert!(!is_valid_commit_hash(&"a".repeat(39)));
+        assert!(!is_valid_commit_hash(&"g".repeat(40)));
+        assert!(!is_valid_commit_hash("../etc/passwd"));
+        assert!(!is_valid_commit_hash(""));
+    }
 }
 
 /// Explicit fetch of remote-tracking refs. Updates refs only; never touches
@@ -549,12 +680,57 @@ pub fn file_diff(path: &str, file: &str) -> Result<FileDiff, String> {
         .filter(|part| !part.trim().is_empty())
         .collect::<Vec<_>>()
         .join("\n");
+    let truncated = truncate_diff(&mut content);
+    Ok(FileDiff { path: file.to_string(), content, untracked: false, truncated })
+}
+
+/// Caps diff content at `MAX_DIFF_BYTES`, truncating on a char boundary and
+/// appending a notice. Returns whether truncation happened. Shared by
+/// `file_diff` and `stash_diff` so both diff viewers behave identically.
+fn truncate_diff(content: &mut String) -> bool {
     let truncated = content.len() > MAX_DIFF_BYTES;
     if truncated {
         let mut end = MAX_DIFF_BYTES;
-        while !content.is_char_boundary(end) { end -= 1; }
+        while !content.is_char_boundary(end) {
+            end -= 1;
+        }
         content.truncate(end);
         content.push_str("\n\n… diff truncated by Git Sentinel …\n");
     }
-    Ok(FileDiff { path: file.to_string(), content, untracked: false, truncated })
+    truncated
+}
+
+/// True only for a well-formed Git object hash (SHA-1's 40 hex chars, or
+/// SHA-256's 64). Rejects anything else so a caller can never smuggle a
+/// flag-like value into `git stash show`.
+fn is_valid_commit_hash(hash: &str) -> bool {
+    matches!(hash.len(), 40 | 64) && hash.bytes().all(|b| b.is_ascii_hexdigit())
+}
+
+/// Reads the diff of one stash entry against its parent commit(s), identified
+/// by its stable commit `hash` rather than the reorderable `stash@{N}`
+/// selector (which can point at a different stash after a push/drop/pop
+/// elsewhere). Re-lists stashes immediately before reading the diff and
+/// requires `hash` to still be present, so a stash that was dropped, applied
+/// or reordered between selection and this call produces a clear error
+/// instead of silently returning a different stash's content. Read-only:
+/// `git stash list`/`git stash show` never apply, pop or drop a stash, or
+/// touch the working tree or index.
+pub fn stash_diff(path: &str, hash: &str) -> Result<StashDiff, String> {
+    let p = Path::new(path);
+    if !is_work_tree(p) {
+        return Err(format!("{path} is not a Git repository"));
+    }
+    if !is_valid_commit_hash(hash) {
+        return Err("not a valid stash hash".into());
+    }
+
+    let listing = run_git(p, &["stash", "list", "--format=%H"])?;
+    if !listing.lines().any(|line| line.trim() == hash) {
+        return Err("this stash no longer exists (it may have been dropped, applied, or reordered)".into());
+    }
+
+    let mut content = run_git(p, &["stash", "show", "-p", "--no-color", hash])?;
+    let truncated = truncate_diff(&mut content);
+    Ok(StashDiff { hash: hash.to_string(), content, truncated })
 }

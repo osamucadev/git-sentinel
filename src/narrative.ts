@@ -4,7 +4,7 @@
 import { fill, relativeTime } from "./i18n";
 import type { Dict } from "./i18n/en";
 import type { RepoStatus } from "./fleet";
-import type { RepositoryState } from "./types";
+import type { RepositoryState, StashEntry } from "./types";
 
 type NarrativeInput = {
   state: RepositoryState;
@@ -13,8 +13,8 @@ type NarrativeInput = {
 };
 
 export type RowSignal = {
-  dimension: "local" | "upstream" | "reference";
-  state: "clean" | "working" | "conflict" | "synced" | "ahead" | "behind" | "diverged" | "unavailable" | "none";
+  dimension: "local" | "upstream" | "reference" | "stash";
+  state: "clean" | "working" | "conflict" | "synced" | "ahead" | "behind" | "diverged" | "unavailable" | "none" | "stashed";
   mark: string;
   label: string;
   detail?: string;
@@ -22,6 +22,17 @@ export type RowSignal = {
   ahead?: number;
   behind?: number;
 };
+
+/** The stash with the oldest committer date, i.e. the longest-standing one,
+ * or null when there are none. Exported so its selection logic can be tested
+ * directly and deterministically, without depending on the wall clock the
+ * way the rendered "N days ago" text does. */
+export function oldestStash(state: RepositoryState): StashEntry | null {
+  if (state.stashes.length === 0) return null;
+  return state.stashes.reduce((oldest, entry) =>
+    new Date(entry.date).getTime() < new Date(oldest.date).getTime() ? entry : oldest
+  );
+}
 
 export type RepositoryRowStory = {
   signals: RowSignal[];
@@ -168,6 +179,20 @@ export function repositoryRowStory({ state, status, lastSuccessfulFetch }: Narra
     signals.push(signalRelation("reference", status.reference.ref, status.reference.rel, d));
   }
 
+  const oldest = oldestStash(state);
+  if (oldest) {
+    const label = state.stashes.length === 1
+      ? d.rowNarrative.stashOne
+      : fill(d.rowNarrative.stashMany, { n: state.stashes.length });
+    signals.push({
+      dimension: "stash",
+      state: "stashed",
+      mark: "▤",
+      label,
+      detail: fill(d.rowNarrative.stashDetail, { time: relativeTime(oldest.date, d) }),
+    });
+  }
+
   if (state.upstream) {
     details.push(lastSuccessfulFetch
       ? fill(d.rowNarrative.freshness, { time: relativeTime(lastSuccessfulFetch, d) })
@@ -198,6 +223,12 @@ export function repositoryNarrative({ state, status, lastSuccessfulFetch }: Narr
 
   const work = workingTreeLine(state, d);
   if (work) lines.push(work);
+  const oldestForStory = oldestStash(state);
+  if (oldestForStory) {
+    lines.push(state.stashes.length === 1
+      ? fill(d.narrative.stashOne, { time: relativeTime(oldestForStory.date, d) })
+      : fill(d.narrative.stashMany, { n: state.stashes.length, time: relativeTime(oldestForStory.date, d) }));
+  }
   if (state.upstream && lastSuccessfulFetch) {
     lines.push(fill(d.narrative.snapshot, { time: relativeTime(lastSuccessfulFetch, d) }));
   }

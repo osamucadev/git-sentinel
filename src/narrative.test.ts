@@ -1,7 +1,8 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { en } from "./i18n/en";
+import { fill, relativeTime } from "./i18n";
 import { deriveStatus } from "./fleet";
-import { repositoryNarrative, repositoryRowNarrative, repositoryRowStory } from "./narrative";
+import { oldestStash, repositoryNarrative, repositoryRowNarrative, repositoryRowStory } from "./narrative";
 import type { RepositoryState } from "./types";
 
 function state(over: Partial<RepositoryState> = {}): RepositoryState {
@@ -15,6 +16,7 @@ function state(over: Partial<RepositoryState> = {}): RepositoryState {
     referenceDivergence: { ahead: 3, behind: 0, baseBranch: "origin/homolog" },
     remotes: [{ name: "origin" }], upstream: "origin/feature/a",
     trackingDivergence: { ahead: 1, behind: 0, baseBranch: "origin/feature/a" },
+    stashes: [],
     ...over,
   };
 }
@@ -102,5 +104,57 @@ describe("repository narrative", () => {
     expect(repositoryRowNarrative({ state: noRemote, status: deriveStatus({ state: noRemote, loading: false }) }, en)).toContain("This repository has no remote configured.");
     const fresh = state();
     expect(repositoryRowNarrative({ state: fresh, status: deriveStatus({ state: fresh, loading: false }) }, en)).toContain(en.rowNarrative.freshnessUnknown);
+  });
+
+  it("adds no stash signal or narrative line when there are no stashes", () => {
+    const repo = state({ stashes: [] });
+    const story = repositoryRowStory({ state: repo, status: deriveStatus({ state: repo, loading: false }) }, en);
+    expect(story.signals.some((s) => s.dimension === "stash")).toBe(false);
+    const lines = repositoryNarrative({ state: repo, status: deriveStatus({ state: repo, loading: false }) }, en);
+    expect(lines.join(" ")).not.toContain("stash");
+  });
+
+  it("oldestStash picks the chronologically earliest entry regardless of array order", () => {
+    const older = { index: 1, reference: "stash@{1}", hash: "bbb", message: "WIP on main: old", branchHint: "main", date: "2026-01-01T00:00:00Z" };
+    const newer = { index: 0, reference: "stash@{0}", hash: "aaa", message: "On main: recent", branchHint: "main", date: "2026-01-10T00:00:00Z" };
+    expect(oldestStash(state({ stashes: [newer, older] }))).toBe(older);
+    expect(oldestStash(state({ stashes: [older, newer] }))).toBe(older);
+  });
+
+  it("oldestStash returns null for a repository with no stashes", () => {
+    expect(oldestStash(state({ stashes: [] }))).toBeNull();
+  });
+
+  it("adds a compact stash signal whose detail names the oldest stash's age, not the newest's", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-02-01T00:00:00Z"));
+    try {
+      const older = { index: 1, reference: "stash@{1}", hash: "bbb", message: "WIP on main: old", branchHint: "main", date: "2026-01-01T00:00:00Z" };
+      const newer = { index: 0, reference: "stash@{0}", hash: "aaa", message: "On main: recent", branchHint: "main", date: "2026-01-30T00:00:00Z" };
+      const repo = state({ stashes: [newer, older] });
+      const story = repositoryRowStory({ state: repo, status: deriveStatus({ state: repo, loading: false }) }, en);
+      const expectedDetail = fill(en.rowNarrative.stashDetail, { time: relativeTime(older.date, en) });
+      expect(story.signals).toContainEqual(expect.objectContaining({
+        dimension: "stash", state: "stashed", label: "2 stashes", detail: expectedDetail,
+      }));
+      // Two stashes do not change the row's single-sentence verdict.
+      expect(story.summary).toBe("1 local commit(s) are not yet in origin/feature/a.");
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("describes a single stash by the oldest stash's age in the long-form story", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-02-01T00:00:00Z"));
+    try {
+      const only = { index: 0, reference: "stash@{0}", hash: "aaa", message: "On main: old work", branchHint: "main", date: "2026-01-01T00:00:00Z" };
+      const repo = state({ stashes: [only] });
+      const lines = repositoryNarrative({ state: repo, status: deriveStatus({ state: repo, loading: false }) }, en);
+      const expected = fill(en.narrative.stashOne, { time: relativeTime(only.date, en) });
+      expect(lines).toContain(expected);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

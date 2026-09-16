@@ -13,6 +13,7 @@ const repo: RepoView = {
     localBranches: { count: 2, names: ["main", "feature/a"], baseBranch: "main" }, localDivergence: null,
     referenceBranch: "origin/main", referenceBranches: ["origin/main"], referenceDivergence: { ahead: 1, behind: 0, baseBranch: "origin/main" },
     remotes: [{ name: "origin" }], upstream: "origin/feature/a", trackingDivergence: { ahead: 0, behind: 0, baseBranch: "origin/feature/a" },
+    stashes: [],
   },
 };
 

@@ -7,7 +7,7 @@ import { headlineText } from "../personality/topology";
 import { repositoryNarrative } from "../narrative";
 import { repositoryActionsDisabled } from "../activity";
 import * as api from "../api";
-import type { ChangedFile, FileDiff } from "../types";
+import type { ChangedFile, FileDiff, StashDiff } from "../types";
 import { ReferenceHelp } from "../components/ReferenceHelp";
 import { repositoryBrowserUrl } from "../repositoryUrl";
 
@@ -22,6 +22,10 @@ export function RepositoryDetails({ path, onBack }: { path: string; onBack: () =
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
   const [diff, setDiff] = useState<FileDiff | null>(null);
   const [diffLoading, setDiffLoading] = useState(false);
+  const [selectedStashHash, setSelectedStashHash] = useState<string | null>(null);
+  const [stashDiff, setStashDiff] = useState<StashDiff | null>(null);
+  const [stashDiffLoading, setStashDiffLoading] = useState(false);
+  const [stashDiffError, setStashDiffError] = useState<string | null>(null);
 
   const repo = app.repos.find((r) => r.path === path);
   const s = repo?.state;
@@ -35,6 +39,12 @@ export function RepositoryDetails({ path, onBack }: { path: string; onBack: () =
     if (!repo?.state || repo.state.workingTree.clean) return;
     void api.listRepositoryChanges(path).then(setChanges).catch((error) => setChangesError(String(error)));
   }, [path, repo?.state?.workingTree.clean, repo?.state?.workingTree.staged, repo?.state?.workingTree.modified, repo?.state?.workingTree.deleted, repo?.state?.workingTree.untracked, repo?.state?.workingTree.conflicted]);
+
+  useEffect(() => {
+    setSelectedStashHash(null);
+    setStashDiff(null);
+    setStashDiffError(null);
+  }, [path]);
 
   const branches = useMemo(() => {
     const names = s?.localBranches.names ?? [];
@@ -222,6 +232,45 @@ export function RepositoryDetails({ path, onBack }: { path: string; onBack: () =
               )}
             </section>
           )}
+
+          <section className="detail-section stashes-section">
+            <h3>{d.details.stashes} · {s.stashes.length}</h3>
+            {s.stashes.length === 0 ? (
+              <p className="muted">{d.details.noStashes}</p>
+            ) : (
+              <div className="changes-layout">
+                <div className="change-list">
+                  {s.stashes.map((entry) => (
+                    <button
+                      key={entry.hash}
+                      className={selectedStashHash === entry.hash ? "selected" : ""}
+                      onClick={() => {
+                        setSelectedStashHash(entry.hash);
+                        setStashDiff(null);
+                        setStashDiffError(null);
+                        setStashDiffLoading(true);
+                        void api.stashDiff(path, entry.hash)
+                          .then(setStashDiff)
+                          .catch((error) => setStashDiffError(String(error)))
+                          .finally(() => setStashDiffLoading(false));
+                      }}
+                    >
+                      <span>{entry.branchHint ?? d.details.stashBranchUnknown}</span>
+                      <code title={entry.message}>{entry.message}</code>
+                      <small className="muted">{relativeTime(entry.date, d)}</small>
+                    </button>
+                  ))}
+                </div>
+                <div className="diff-view" aria-live="polite">
+                  {!selectedStashHash && <p className="muted">{d.details.stashDiffPlaceholder}</p>}
+                  {stashDiffLoading && <p className="muted">{d.common.loading}</p>}
+                  {stashDiffError && <p className="fetch-error">{stashDiffError}</p>}
+                  {stashDiff && <pre>{stashDiff.content || d.details.noChanges}</pre>}
+                  {stashDiff?.truncated && <p className="muted">{d.details.diffTruncated}</p>}
+                </div>
+              </div>
+            )}
+          </section>
 
           <section className="detail-section">
             <h3>{d.details.branches} · {s.localBranches.count}</h3>

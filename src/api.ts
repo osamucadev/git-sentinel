@@ -5,7 +5,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { listen, type UnlistenFn } from "@tauri-apps/api/event";
 import { open } from "@tauri-apps/plugin-dialog";
 import { openUrl } from "@tauri-apps/plugin-opener";
-import type { ChangedFile, FileDiff, RepositoryState } from "./types";
+import type { ChangedFile, FileDiff, RepositoryState, StashDiff } from "./types";
 
 /** Native folder picker. Returns the chosen absolute path, or null if cancelled. */
 export async function pickFolder(): Promise<string | null> {
@@ -48,6 +48,13 @@ export function listRepositoryChanges(path: string): Promise<ChangedFile[]> {
 /** Read-only staged plus unstaged diff for one changed path. */
 export function repositoryFileDiff(path: string, file: string): Promise<FileDiff> {
   return invoke("repository_file_diff", { path, file });
+}
+
+/** Read-only diff for one stash entry, identified by its stable commit hash
+ * rather than the reorderable `stash@{N}` selector. Never applies, pops or
+ * drops it. Rejects if the stash no longer exists under that hash. */
+export function stashDiff(path: string, hash: string): Promise<StashDiff> {
+  return invoke("repository_stash_diff", { path, hash });
 }
 
 /** Starts/stops native local-state watching; it never fetches from a remote. */

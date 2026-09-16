@@ -17,6 +17,7 @@ pub fn run() {
             commands::push_repository,
             commands::list_repository_changes,
             commands::repository_file_diff,
+            commands::repository_stash_diff,
             commands::watch_repository,
             commands::unwatch_repository,
             commands::finish_startup,

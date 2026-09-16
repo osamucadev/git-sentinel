@@ -21,6 +21,7 @@ function state(over: Partial<RepositoryState> = {}): RepositoryState {
     remotes: [{ name: "origin" }],
     upstream: "origin/feature/checkout-label",
     trackingDivergence: { ahead: 1, behind: 0, baseBranch: "origin/feature/checkout-label" },
+    stashes: [],
     ...over,
   };
 }

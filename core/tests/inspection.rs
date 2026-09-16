@@ -4,8 +4,8 @@ use std::fs;
 use std::path::Path;
 use std::process::Command;
 
-use git_sentinel_core::git::{git_dir, is_work_tree};
-use git_sentinel_core::inspect::{inspect, inspect_with_reference};
+use git_sentinel_core::git::{extra_watch_dirs, git_common_dir, git_dir, is_work_tree};
+use git_sentinel_core::inspect::{inspect, inspect_with_reference, stash_diff};
 
 fn git(dir: &Path, args: &[&str]) {
     let status = Command::new("git")
@@ -30,6 +30,17 @@ fn commit_file(dir: &Path, name: &str, contents: &str, message: &str) {
     fs::write(dir.join(name), contents).unwrap();
     git(dir, &["add", name]);
     git(dir, &["commit", "-q", "-m", message]);
+}
+
+fn stash_push(dir: &Path, message: Option<&str>) {
+    match message {
+        Some(m) => git(dir, &["stash", "push", "-q", "-m", m]),
+        None => git(dir, &["stash", "push", "-q"]),
+    }
+}
+
+fn read_stdout(dir: &Path, args: &[&str]) -> String {
+    String::from_utf8(Command::new("git").args(args).current_dir(dir).output().unwrap().stdout).unwrap()
 }
 
 #[test]
@@ -159,6 +170,78 @@ fn linked_worktree_resolves_git_metadata_outside_its_git_file() {
 }
 
 #[test]
+fn git_common_dir_matches_git_dir_for_a_normal_checkout() {
+    let repo = new_repo();
+    commit_file(repo.path(), "a.txt", "one", "initial");
+    assert_eq!(git_dir(repo.path()).unwrap(), git_common_dir(repo.path()).unwrap());
+}
+
+#[test]
+fn git_common_dir_of_a_linked_worktree_is_the_main_repository_git_dir() {
+    let repo = new_repo();
+    commit_file(repo.path(), "a.txt", "one", "initial");
+    let linked = repo.path().join("linked-worktree");
+    git(repo.path(), &["worktree", "add", "-q", "-b", "linked", linked.to_str().unwrap()]);
+
+    let main_git_dir = git_dir(repo.path()).unwrap();
+    let linked_git_dir = git_dir(&linked).unwrap();
+    let linked_common_dir = git_common_dir(&linked).unwrap();
+
+    // The linked worktree's own git_dir is its private administrative
+    // directory, distinct from both the main repo's git_dir and its own
+    // common dir...
+    assert_ne!(linked_git_dir, main_git_dir);
+    // ...but its common dir IS the main repository's git_dir: this is where
+    // shared refs (including refs/stash) actually live.
+    assert_eq!(linked_common_dir, main_git_dir);
+}
+
+#[test]
+fn a_stash_pushed_from_a_linked_worktree_is_visible_from_the_main_worktree() {
+    // Proves refs/stash is genuinely shared repository-wide (not per
+    // worktree), which is why watching only a linked worktree's own git_dir
+    // (its private administrative directory) is not enough to observe stash
+    // changes made from it — the fix must watch git_common_dir too.
+    let repo = new_repo();
+    commit_file(repo.path(), "a.txt", "one", "initial");
+    let linked = repo.path().join("linked-worktree");
+    git(repo.path(), &["worktree", "add", "-q", "-b", "linked", linked.to_str().unwrap()]);
+
+    fs::write(linked.join("a.txt"), "one\nfrom linked worktree").unwrap();
+    stash_push(&linked, Some("from linked worktree"));
+
+    let main_state = inspect(repo.path().to_str().unwrap()).unwrap();
+    assert_eq!(main_state.stashes.len(), 1);
+    assert!(main_state.stashes[0].message.contains("from linked worktree"));
+
+    let linked_state = inspect(linked.to_str().unwrap()).unwrap();
+    assert_eq!(linked_state.stashes.len(), 1);
+    assert_eq!(linked_state.stashes[0].hash, main_state.stashes[0].hash);
+}
+
+#[test]
+fn extra_watch_dirs_for_a_real_normal_checkout_is_empty() {
+    let repo = new_repo();
+    commit_file(repo.path(), "a.txt", "one", "initial");
+    let root = repo.path().to_str().unwrap();
+    let dirs = extra_watch_dirs(root, &git_dir(repo.path()).unwrap(), &git_common_dir(repo.path()).unwrap());
+    assert!(dirs.is_empty(), "a normal checkout's Git metadata is already inside root's recursive watch");
+}
+
+#[test]
+fn extra_watch_dirs_for_a_real_linked_worktree_covers_the_shared_stash_location() {
+    let repo = new_repo();
+    commit_file(repo.path(), "a.txt", "one", "initial");
+    let linked = repo.path().join("linked-worktree");
+    git(repo.path(), &["worktree", "add", "-q", "-b", "linked", linked.to_str().unwrap()]);
+
+    let root = linked.to_str().unwrap();
+    let dirs = extra_watch_dirs(root, &git_dir(&linked).unwrap(), &git_common_dir(&linked).unwrap());
+    let common = git_common_dir(&linked).unwrap();
+    assert_eq!(dirs, vec![common], "the linked worktree's watch set must include the shared common dir where refs/stash lives");
+}
+
+#[test]
 fn configured_reference_is_real_persisted_ref_and_has_its_own_divergence() {
     let remote = tempfile::tempdir().unwrap();
     git(remote.path(), &["init", "-q", "--bare", "-b", "main"]);
@@ -250,4 +333,144 @@ fn removing_from_sentinel_does_not_touch_the_repository() {
 
     assert_eq!(head_before, head_after);
     assert_eq!(status_before, status_after);
+}
+
+#[test]
+fn repository_without_stash_has_an_empty_stash_list() {
+    let repo = new_repo();
+    commit_file(repo.path(), "a.txt", "one", "initial");
+    let state = inspect(repo.path().to_str().unwrap()).unwrap();
+    assert!(state.stashes.is_empty());
+}
+
+#[test]
+fn a_single_stash_is_reported_with_its_branch_hint() {
+    let repo = new_repo();
+    commit_file(repo.path(), "a.txt", "one", "initial");
+    fs::write(repo.path().join("a.txt"), "one\nchanged").unwrap();
+    stash_push(repo.path(), Some("work in progress"));
+
+    let state = inspect(repo.path().to_str().unwrap()).unwrap();
+    assert_eq!(state.stashes.len(), 1);
+    let entry = &state.stashes[0];
+    assert_eq!(entry.reference, "stash@{0}");
+    assert_eq!(entry.index, 0);
+    assert!(entry.message.contains("work in progress"));
+    assert_eq!(entry.branch_hint.as_deref(), Some("main"));
+    assert!(!entry.hash.is_empty());
+    assert!(!entry.date.is_empty());
+}
+
+#[test]
+fn multiple_stashes_are_reported_most_recent_first() {
+    let repo = new_repo();
+    commit_file(repo.path(), "a.txt", "one", "initial");
+    fs::write(repo.path().join("a.txt"), "one\nfirst").unwrap();
+    stash_push(repo.path(), Some("first"));
+    fs::write(repo.path().join("a.txt"), "one\nsecond").unwrap();
+    stash_push(repo.path(), Some("second"));
+
+    let state = inspect(repo.path().to_str().unwrap()).unwrap();
+    assert_eq!(state.stashes.len(), 2);
+    assert_eq!(state.stashes[0].index, 0);
+    assert_eq!(state.stashes[1].index, 1);
+    assert!(state.stashes[0].message.contains("second"));
+    assert!(state.stashes[1].message.contains("first"));
+}
+
+#[test]
+fn a_stash_created_in_detached_head_has_no_branch_hint() {
+    let repo = new_repo();
+    commit_file(repo.path(), "a.txt", "one", "initial");
+    git(repo.path(), &["checkout", "-q", "--detach", "HEAD"]);
+    fs::write(repo.path().join("a.txt"), "one\ndetached").unwrap();
+    stash_push(repo.path(), None);
+
+    let state = inspect(repo.path().to_str().unwrap()).unwrap();
+    assert_eq!(state.stashes.len(), 1);
+    assert_eq!(state.stashes[0].branch_hint, None);
+}
+
+#[test]
+fn inspecting_a_repository_with_a_stash_never_touches_the_stash_or_working_tree() {
+    let repo = new_repo();
+    let p = repo.path();
+    commit_file(p, "a.txt", "one", "initial");
+    fs::write(p.join("a.txt"), "one\nchanged").unwrap();
+    stash_push(p, Some("do not touch me"));
+
+    let stash_before = read_stdout(p, &["stash", "list"]);
+    let status_before = read_stdout(p, &["status", "--porcelain"]);
+
+    let _ = inspect(p.to_str().unwrap()).unwrap();
+
+    assert_eq!(stash_before, read_stdout(p, &["stash", "list"]));
+    assert_eq!(status_before, read_stdout(p, &["status", "--porcelain"]));
+}
+
+#[test]
+fn stash_diff_returns_the_patch_without_mutating_the_stash() {
+    let repo = new_repo();
+    let p = repo.path();
+    commit_file(p, "a.txt", "one", "initial");
+    fs::write(p.join("a.txt"), "one\nchanged").unwrap();
+    stash_push(p, Some("work"));
+    let hash = read_stdout(p, &["rev-parse", "refs/stash"]).trim().to_string();
+
+    let stash_before = read_stdout(p, &["stash", "list"]);
+
+    let diff = stash_diff(p.to_str().unwrap(), &hash).unwrap();
+    assert_eq!(diff.hash, hash);
+    assert!(diff.content.contains("changed"));
+    assert!(!diff.truncated);
+
+    assert_eq!(stash_before, read_stdout(p, &["stash", "list"]), "reading a stash diff must never mutate the stash list");
+}
+
+#[test]
+fn stash_diff_rejects_a_hash_that_is_not_well_formed() {
+    let repo = new_repo();
+    commit_file(repo.path(), "a.txt", "one", "initial");
+    assert!(stash_diff(repo.path().to_str().unwrap(), "--upload-pack=evil").is_err());
+    assert!(stash_diff(repo.path().to_str().unwrap(), "../etc/passwd").is_err());
+    assert!(stash_diff(repo.path().to_str().unwrap(), "stash@{0}").is_err());
+}
+
+#[test]
+fn stash_diff_returns_a_clear_error_when_the_stash_was_dropped_after_selection() {
+    // Reproduces the exact race a caller can hit: it selects a stash (learns
+    // its hash), the stash is dropped by someone else, and only then does it
+    // ask for the diff. This must fail loudly, never fall back to showing an
+    // unrelated stash or a dangling commit silently.
+    let repo = new_repo();
+    let p = repo.path();
+    commit_file(p, "a.txt", "one", "initial");
+    fs::write(p.join("a.txt"), "one\nchanged").unwrap();
+    stash_push(p, Some("about to be dropped"));
+    let hash = read_stdout(p, &["rev-parse", "refs/stash"]).trim().to_string();
+
+    git(p, &["stash", "drop", "-q"]);
+
+    let result = stash_diff(p.to_str().unwrap(), &hash);
+    assert!(result.is_err(), "expected an error once the stash no longer exists");
+}
+
+#[test]
+fn stash_diff_still_resolves_the_requested_stash_after_the_list_reorders() {
+    // A second, unrelated stash pushed after selection shifts every earlier
+    // entry's stash@{N} index. Identity by hash must be unaffected.
+    let repo = new_repo();
+    let p = repo.path();
+    commit_file(p, "a.txt", "one", "initial");
+    fs::write(p.join("a.txt"), "one\nfirst").unwrap();
+    stash_push(p, Some("first"));
+    let first_hash = read_stdout(p, &["rev-parse", "refs/stash"]).trim().to_string();
+
+    fs::write(p.join("a.txt"), "one\nsecond").unwrap();
+    stash_push(p, Some("second"));
+    // "first" is now stash@{1}, not stash@{0} anymore.
+
+    let diff = stash_diff(p.to_str().unwrap(), &first_hash).unwrap();
+    assert!(diff.content.contains("first"));
+    assert!(!diff.content.contains("second"));
 }

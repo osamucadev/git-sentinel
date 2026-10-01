@@ -1307,7 +1307,7 @@ dependencies = [
 
 [[package]]
 name = "git-sentinel"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "git-sentinel-core",
  "notify",
@@ -1322,7 +1322,7 @@ dependencies = [
 
 [[package]]
 name = "git-sentinel-core"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "serde",
  "tempfile",

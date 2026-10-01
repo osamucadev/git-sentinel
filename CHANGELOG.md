@@ -6,6 +6,18 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [0.3.1] - 2026-09-30
+
+### Changed
+
+- The main window now opens maximized. It remains an ordinary window: restoring returns it to its normal resizable size.
+
+### Fixed
+
+- Idle CPU usage. The local watcher reacted to every filesystem event, including files merely being opened, and every inspection opens files in the watched tree. Each inspection therefore scheduled the next one, keeping every registered repository in a permanent loop of Git commands while the app sat idle. Only events that can change an inspection now trigger one.
+- Inspection no longer rewrites `.git/index`. Git runs with `--no-optional-locks`, so a read such as `git status` cannot refresh the index as a side effect.
+- Title-bar minimize, maximize and close buttons on Wayland. Updating to Tauri 2.12 (tao 0.37) restores native GTK decorations; previously the buttons received neither clicks nor hover on a window shown after the startup splash.
+
 ## [0.3.0] - 2026-09-16
 
 ### Added
@@ -106,7 +118,8 @@ First public Linux release of Git Sentinel.
 - The application does not provide pull, push, checkout, merge, rebase, reset, branch creation, stash, desktop notifications, or tray support.
 - Runtime window-icon changes can be ignored by the active Linux desktop environment or compositor; the official neutral icon remains the fallback.
 
-[Unreleased]: https://github.com/osamucadev/git-sentinel/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/osamucadev/git-sentinel/compare/v0.3.1...HEAD
+[0.3.1]: https://github.com/osamucadev/git-sentinel/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/osamucadev/git-sentinel/compare/v0.2.1...v0.3.0
 [0.2.1]: https://github.com/osamucadev/git-sentinel/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/osamucadev/git-sentinel/compare/v0.1.0...v0.2.0

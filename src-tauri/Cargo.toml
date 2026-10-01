@@ -1,6 +1,6 @@
 [package]
 name = "git-sentinel"
-version = "0.3.0"
+version = "0.3.1"
 description = "Local-first desktop dashboard for your Git repositories"
 authors = ["Git Sentinel"]
 edition = "2021"

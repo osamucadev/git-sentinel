@@ -14,7 +14,9 @@ tauri-build = { version = "2", features = [] }
 
 [dependencies]
 git-sentinel-core = { path = "../core" }
-tauri = { version = "2", features = ["image-png"] }
+# 2.12+ ships tao 0.36+, whose native GTK decorations fix dead title-bar
+# buttons on Wayland for a window shown after being created hidden.
+tauri = { version = "2.12", features = ["image-png"] }
 tauri-plugin-opener = "2"
 tauri-plugin-dialog = "2"
 tauri-plugin-store = "2"

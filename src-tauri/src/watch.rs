@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use std::path::Path;
 use std::sync::Mutex;
 
-use notify::{Config, RecommendedWatcher, RecursiveMode, Watcher};
+use notify::{Config, EventKind, RecommendedWatcher, RecursiveMode, Watcher};
 use tauri::{AppHandle, Emitter};
 
 /// Owns native filesystem watchers for registered repositories. The watcher
@@ -29,7 +29,7 @@ impl WatchRegistry {
         let event_root = root.clone();
         let mut watcher = RecommendedWatcher::new(
             move |event: notify::Result<notify::Event>| {
-                if event.is_ok() {
+                if event.is_ok_and(|event| is_local_change(&event.kind)) {
                     // The renderer owns the debounce, coalescing a commit or
                     // checkout's several filesystem updates into one inspect.
                     let _ = app.emit("repository-local-change", &event_root);
@@ -56,5 +56,46 @@ impl WatchRegistry {
         if let Ok(mut watchers) = self.watchers.lock() {
             watchers.remove(root);
         }
+    }
+}
+
+/// True for events that can change what an inspection reports. Access events
+/// (a file or directory merely being opened, read or closed) never can, and
+/// must not count: every inspection opens files in the watched tree itself,
+/// so reacting to them makes each inspection schedule the next one forever.
+/// A write still counts through its own `Modify` event.
+fn is_local_change(kind: &EventKind) -> bool {
+    !matches!(kind, EventKind::Access(_))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use notify::event::{
+        AccessKind, AccessMode, CreateKind, DataChange, MetadataKind, ModifyKind, RemoveKind,
+        RenameMode,
+    };
+
+    #[test]
+    fn reads_are_not_local_changes() {
+        assert!(!is_local_change(&EventKind::Access(AccessKind::Open(AccessMode::Any))));
+        assert!(!is_local_change(&EventKind::Access(AccessKind::Read)));
+        assert!(!is_local_change(&EventKind::Access(AccessKind::Close(AccessMode::Read))));
+        assert!(!is_local_change(&EventKind::Access(AccessKind::Close(AccessMode::Write))));
+    }
+
+    #[test]
+    fn writes_creations_removals_and_renames_are_local_changes() {
+        assert!(is_local_change(&EventKind::Create(CreateKind::File)));
+        assert!(is_local_change(&EventKind::Modify(ModifyKind::Data(DataChange::Any))));
+        assert!(is_local_change(&EventKind::Modify(ModifyKind::Metadata(MetadataKind::Any))));
+        assert!(is_local_change(&EventKind::Modify(ModifyKind::Name(RenameMode::Both))));
+        assert!(is_local_change(&EventKind::Remove(RemoveKind::File)));
+    }
+
+    #[test]
+    fn unclassified_events_are_kept_rather_than_silently_dropped() {
+        assert!(is_local_change(&EventKind::Any));
+        assert!(is_local_change(&EventKind::Other));
     }
 }

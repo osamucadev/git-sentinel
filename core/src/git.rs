@@ -5,8 +5,14 @@ use std::process::Command;
 ///
 /// Arguments are passed as a real argv (never a shell string), so repository
 /// paths are treated as opaque data and cannot be interpreted as shell syntax.
+///
+/// `--no-optional-locks` stops read commands such as `git status` from
+/// rewriting `.git/index` as a side effect. Inspection must never write to
+/// the repository, and such a write would also look like a local change to
+/// the watcher and trigger another inspection.
 pub fn run_git(cwd: &Path, args: &[&str]) -> Result<String, String> {
     let output = Command::new("git")
+        .arg("--no-optional-locks")
         .args(args)
         .current_dir(cwd)
         .output()

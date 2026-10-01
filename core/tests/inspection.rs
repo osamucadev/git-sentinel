@@ -474,3 +474,27 @@ fn stash_diff_still_resolves_the_requested_stash_after_the_list_reorders() {
     assert!(diff.content.contains("first"));
     assert!(!diff.content.contains("second"));
 }
+
+#[test]
+fn inspecting_never_rewrites_the_git_index() {
+    // A file rewritten with identical content has a new mtime, so its cached
+    // stat data in the index is stale. A plain `git status` would refresh and
+    // rewrite `.git/index` here; inspection must leave it byte-for-byte alone,
+    // both because it must never write to a repository and because that write
+    // would be seen by the watcher as a local change.
+    let repo = new_repo();
+    let p = repo.path();
+    commit_file(p, "a.txt", "one", "initial");
+    std::thread::sleep(std::time::Duration::from_millis(1100));
+    fs::write(p.join("a.txt"), "one").unwrap();
+
+    let index = p.join(".git").join("index");
+    let before = fs::read(&index).unwrap();
+    let modified_before = fs::metadata(&index).unwrap().modified().unwrap();
+
+    let state = inspect(p.to_str().unwrap()).unwrap();
+    assert!(state.working_tree.clean);
+
+    assert_eq!(before, fs::read(&index).unwrap());
+    assert_eq!(modified_before, fs::metadata(&index).unwrap().modified().unwrap());
+}

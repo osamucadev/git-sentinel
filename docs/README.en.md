@@ -59,7 +59,7 @@ Fetch updates remote-tracking refs for one repository. Fetch all performs the sa
 
 Push is an explicit normal `git push` action for a branch with commits waiting for its configured upstream. Git Sentinel never uses force. Repository Details can also list changed files and show staged plus unstaged diffs without writing to the working tree or index. Saved stashes are listed as read-only context, each with its inferred origin branch and a diff identified by the stash's stable commit hash; Sentinel never applies, pops, or drops a stash. Diffs render as color-coded line views with line-number gutters, colored from each personality's own palette.
 
-The activity strip reports inspection and fetch progress, including completed items, failures, and an active repository. During conflicting work, affected actions can be disabled, but navigation remains available.
+The status bar, fixed at the bottom of every screen, reports inspection, fetch, and push progress, including completed items, failures, and the active repository. While nothing runs, it rotates through factual insights about your repositories, such as commits waiting to be pushed, branches behind their upstream, the oldest stash, and overall statistics; insights about one repository open it on click. During conflicting work, affected actions can be disabled, but navigation remains available.
 
 ### Other actions
 

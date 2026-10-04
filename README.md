@@ -56,6 +56,10 @@ HQ groups your registered repositories by what needs attention and makes the imp
 
 Healthy repositories stay compact. Repositories with local work, divergence, conflicts, unavailable tracking, or other relevant state receive proportionally more context.
 
+### Status bar
+
+A status bar stays fixed at the bottom of every screen. It shows operation progress while Fetch, Push, or Refresh runs, and otherwise rotates through short factual insights about your repositories: branches behind their upstream, commits waiting to be pushed, the oldest Sentinel fetch, uncommitted changes, the oldest stash, the most recent and quietest repository, and overall statistics. Insights about one repository open it on click. The bar never changes height, so the content above it never shifts.
+
 ### Repository details
 
 Open a repository to inspect its branch, working tree, upstream and reference relationships, saved stashes, remotes, branches, and latest activity in more detail. Changed files and stash entries open read-only, color-coded diffs. The details view keeps the Git topology presentation where it is useful; HQ intentionally uses semantic signals instead of a Git graph.
@@ -70,7 +74,7 @@ Git Sentinel distinguishes local inspection from network activity:
 - **Automatic Fetch** is optional, off by default, and only runs while the app is open. It never performs pull or push.
 - **Push** is explicit, normal, and never forced. It is available only when your current branch has commits waiting for its configured upstream.
 - Diffs are rendered as structured, color-coded lines in every personality.
-- Network work runs away from the GUI event loop and reports progress in the activity strip, keeping the application navigable and scrollable.
+- Network work runs away from the GUI event loop and reports progress in the status bar, keeping the application navigable and scrollable.
 
 ### Personalities and language
 

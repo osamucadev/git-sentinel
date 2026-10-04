@@ -6,6 +6,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-10-03
+
 ### Added
 
 - A status bar fixed to the bottom of the window, on every screen. While nothing runs it rotates through fleet insights read from local state: unavailable repositories, branches behind their upstream, commits waiting to be pushed, repositories never or long not fetched through Sentinel, uncommitted changes, the oldest stash, the most recent and the quietest repository by latest commit, and overall statistics. Insights naming one repository open it on click. Rotation is slow, pauses under the pointer or keyboard focus, and can be stepped manually. Insights are facts, never alerts, and never claim who authored a commit.
@@ -126,7 +128,8 @@ First public Linux release of Git Sentinel.
 - The application does not provide pull, push, checkout, merge, rebase, reset, branch creation, stash, desktop notifications, or tray support.
 - Runtime window-icon changes can be ignored by the active Linux desktop environment or compositor; the official neutral icon remains the fallback.
 
-[Unreleased]: https://github.com/osamucadev/git-sentinel/compare/v0.3.1...HEAD
+[Unreleased]: https://github.com/osamucadev/git-sentinel/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/osamucadev/git-sentinel/compare/v0.3.1...v0.4.0
 [0.3.1]: https://github.com/osamucadev/git-sentinel/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/osamucadev/git-sentinel/compare/v0.2.1...v0.3.0
 [0.2.1]: https://github.com/osamucadev/git-sentinel/compare/v0.2.0...v0.2.1

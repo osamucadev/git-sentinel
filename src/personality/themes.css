@@ -428,17 +428,51 @@ code, .mono { font-family: var(--font-mono); }
 .rr-activity {
   display: flex; flex-direction: column; gap: 2px; font-size: 11px; color: var(--text-dim); min-width: 0;
 }
-.activity-strip { margin: 12px 0 16px; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); }
-.activity-strip-main { display: flex; gap: 10px; align-items: baseline; font-size: 12px; }
-.activity-strip-main span, .activity-strip-detail { color: var(--text-dim); }
-.activity-strip-detail { margin-top: 5px; font-size: 11px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.activity-progress { height: 4px; margin-top: 8px; background: color-mix(in srgb, var(--border) 78%, transparent); overflow: hidden; }
+/* Status bar: always present, one fixed-height line at the bottom of the
+   window (like an editor's status bar). Operation progress and insights swap
+   inside it, so nothing ever enters or leaves the page flow. */
+:root { --status-bar-h: 28px; }
+.app-shell.with-status-bar { padding-bottom: var(--status-bar-h); }
+.status-bar {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 50;
+  height: var(--status-bar-h); box-sizing: border-box;
+  display: flex; align-items: center; gap: 14px; padding: 0 10px 0 12px;
+  background: var(--surface); border-top: 1px solid var(--border);
+  color: var(--text-dim); font-size: 12px; line-height: 1; white-space: nowrap; overflow: hidden;
+}
+.status-main { flex: 1; min-width: 0; display: flex; align-items: center; }
+.status-side { flex: 0 0 auto; font: 11px var(--font-mono); }
+.status-insight { display: flex; align-items: center; gap: 4px; min-width: 0; }
+.status-insight-text { min-width: 0; overflow: hidden; text-overflow: ellipsis; padding: 0 4px; }
+button.status-insight-text { border: 0; background: transparent; height: 22px; font: inherit; color: var(--text); cursor: pointer; text-align: left; }
+button.status-insight-text:hover { text-decoration: underline; background: transparent; }
+.status-nav { flex: 0 0 auto; border: 0; background: transparent; height: 22px; padding: 0 6px; font-size: 14px; line-height: 1; color: var(--text-dim); }
+.status-nav:hover { color: var(--text); }
+.status-bar button:active { transform: none; }
+.status-bar button:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.status-count { flex: 0 0 auto; font: 10px var(--font-mono); opacity: .75; }
+.status-activity { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.status-activity strong { flex: 0 0 auto; color: var(--text); font-weight: 600; }
+.status-activity-summary { flex: 0 0 auto; font-family: var(--font-mono); font-size: 11px; }
+.status-activity-detail { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.activity-progress { flex: 0 0 120px; height: 4px; background: color-mix(in srgb, var(--border) 78%, transparent); overflow: hidden; }
 .activity-progress i { display: block; height: 100%; min-width: 2px; background: var(--accent); transition: width .18s ease; }
-.activity-strip[data-kind="fetchAll"] .activity-progress i { background: var(--ahead); }
-.activity-strip[data-phase="complete"] { border-color: color-mix(in srgb, var(--clean) 45%, var(--border)); }
-:root[data-personality="cute"] .activity-strip { border-radius: 13px; background: color-mix(in srgb, var(--surface) 90%, var(--accent-soft)); }
-:root[data-personality="scifi"] .activity-strip { border-radius: 0; border-color: color-mix(in srgb, var(--accent) 65%, var(--border)); text-transform: uppercase; letter-spacing: .05em; }
-:root[data-personality="jarbas"] .activity-strip { border-color: color-mix(in srgb, var(--accent) 34%, var(--border)); }
+.status-activity[data-kind="fetchAll"] .activity-progress i { background: var(--ahead); }
+.status-activity[data-phase="complete"] strong { color: var(--clean); }
+.status-activity[data-phase="complete"] .activity-progress i { background: var(--clean); }
+/* A button whose label changes for a spinner keeps the label's width. */
+button.keeps-width { position: relative; }
+button.keeps-width .label-hidden { visibility: hidden; }
+button.keeps-width .spin { position: absolute; inset: 0; margin: auto; }
+:root[data-personality="technical"] .status-bar { background: #f9fbfd; border-top-color: #bdcddb; }
+:root[data-personality="cute"] .status-bar { background: rgba(253,249,255,.96); border-top: 2px solid #c8afe9; }
+:root[data-personality="scifi"] .status-bar { background: #0d2d46; border-top: 2px solid #a85cff; text-transform: uppercase; letter-spacing: .05em; }
+:root[data-personality="scifi"] .status-bar .status-insight-text, :root[data-personality="scifi"] .status-activity strong { color: #9fefff; }
+:root[data-personality="jarbas"] .status-bar { background: rgba(8,17,28,.96); border-top-color: #203b52; }
+:root[data-personality="retro"] .status-bar { background: #fffaf2; border-top: 3px double #6b5148; font-family: Georgia, serif; }
+:root[data-personality="lineart"] .status-bar { background: #fffdf8; border-top: 2px solid #0b1b4e; }
+:root[data-personality="pixel"] .status-bar { background: #fffef0; border-top: 3px solid #1476e8; }
+:root[data-personality="glass"] .status-bar { background: rgba(33,18,101,.72); border-top-color: rgba(255,255,255,.35); backdrop-filter: blur(16px); }
 .rr-hash { font-family: var(--font-mono); color: var(--text); }
 .rr-subject { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .rr-fetch-error { margin-top: 6px; }
@@ -675,7 +709,7 @@ ul { margin: 0; padding: 0; }
 .modal .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
 
 .toast {
-  position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+  position: fixed; bottom: calc(var(--status-bar-h) + 12px); left: 50%; transform: translateX(-50%);
   background: var(--surface); border: 1px solid var(--border-strong);
   border-left: 3px solid var(--danger);
   padding: 8px 8px 8px 13px; border-radius: var(--radius); box-shadow: var(--shadow);
@@ -886,8 +920,7 @@ ul { margin: 0; padding: 0; }
 :root[data-personality="scifi"] .repo-row { position: relative; overflow: visible; }
 :root[data-personality="scifi"] .repo-row::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--accent) 10%, transparent), transparent); transform: translateX(-100%); }
 :root[data-personality="scifi"] .repo-row:hover::after { animation: scan 0.8s ease-out; }
-:root[data-personality="scifi"] .activity-strip { border: 2px solid #23eff2; border-left-color: #a85cff; background: #102f47; box-shadow: 5px 5px 0 rgba(58, 16, 109, 0.55); }
-:root[data-personality="scifi"] .activity-progress { height: 7px; background: #0c2639; border: 1px solid #a85cff; }
+:root[data-personality="scifi"] .activity-progress { height: 6px; background: #0c2639; border: 1px solid #a85cff; }
 :root[data-personality="scifi"] .activity-progress i { background: repeating-linear-gradient(90deg, #23eff2 0 8px, #4cf277 8px 12px, #12334a 12px 14px); }
 :root[data-personality="scifi"] select { color-scheme: dark; color: #e7fbff; background: #102f47; border-color: #23eff2; }
 :root[data-personality="scifi"] select option { color: #e7fbff; background: #102f47; }
@@ -1000,8 +1033,8 @@ ul { margin: 0; padding: 0; }
   --radius: 0; --radius-lg: 0; --font: "DejaVu Sans Mono", monospace; --font-display: var(--font); --display-transform: uppercase; --display-spacing: .04em; --row-pad-y: 11px;
 }
 :root[data-personality="pixel"] body { background-image: linear-gradient(90deg, transparent 0 78%, rgba(20,118,232,.12) 78% 81%, transparent 81%), linear-gradient(#d9f6fb,#f9d8ed); background-size: 92px 92px, auto; }
-:root[data-personality="pixel"] .app-shell::before { content: "✦  ◆  ▣"; position: fixed; right: 28px; bottom: 24px; z-index: 0; color: rgba(20,118,232,.32); font-family: var(--font-mono); font-size: 22px; letter-spacing: 8px; pointer-events: none; }
-:root[data-personality="pixel"] .app-shell > * { position: relative; z-index: 1; }
+:root[data-personality="pixel"] .app-shell::before { content: "✦  ◆  ▣"; position: fixed; right: 28px; bottom: calc(var(--status-bar-h) + 24px); z-index: 0; color: rgba(20,118,232,.32); font-family: var(--font-mono); font-size: 22px; letter-spacing: 8px; pointer-events: none; }
+:root[data-personality="pixel"] .app-shell > :not(.status-bar-host) { position: relative; z-index: 1; }
 :root[data-personality="pixel"] .topbar { border-bottom: 4px solid #1476e8; background: #fffef0; box-shadow: 4px 4px 0 #9ed3ff; }
 :root[data-personality="pixel"] .brand-mark { width: 27px; height: 27px; border: 3px solid #1476e8; background: #ffec7b; color: #de64be; font-size: 9px; }
 :root[data-personality="pixel"] .hq-head { padding: 18px 22px; border: 4px solid #1476e8; background: #fffef0; box-shadow: 5px 5px 0 #a7cdf5; }
@@ -1035,7 +1068,6 @@ ul { margin: 0; padding: 0; }
 :root[data-personality="glass"] .repo-row { background: rgba(255,255,255,.075); }
 :root[data-personality="glass"] .repo-row:hover { background: rgba(255,255,255,.13); }
 :root[data-personality="glass"] .rr-chip { border-color: rgba(255,255,255,.32); box-shadow: 0 5px 14px rgba(20,8,72,.18); }
-:root[data-personality="glass"] .activity-strip { background: rgba(29,14,93,.4); border-color: rgba(255,255,255,.35); backdrop-filter: blur(15px); }
 :root[data-personality="glass"] select { color-scheme: dark; color: #f5f3ff; background: #38227f; border-color: rgba(255,255,255,.46); }
 :root[data-personality="glass"] select option { color: #f5f3ff; background: #38227f; }
 

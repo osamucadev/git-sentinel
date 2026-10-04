@@ -18,7 +18,6 @@ import type { RepoView } from "../state/AppState";
 import { RepoRow } from "../components/RepoRow";
 import { Modal } from "../components/Modal";
 import { Toast } from "../components/Toast";
-import { ActivityStrip } from "../components/ActivityStrip";
 import { repositoryActionsDisabled } from "../activity";
 
 type Entry = { repo: RepoView; status: RepoStatus };
@@ -95,12 +94,11 @@ export function Hq({ onOpenDetails }: { onOpenDetails: (path: string) => void })
     setBusy(true);
     const s = await app.fetchAll();
     setBusy(false);
-    const ok = fill(d.hq.fetchedOk, { n: s.succeeded });
-    setToast(
-      s.failed.length === 0
-        ? { msg: ok, kind: "ok" }
-        : { msg: `${ok} · ${fill(d.hq.fetchedFailed, { n: s.failed.length })}`, kind: "error" },
-    );
+    // Success is already reported by the status bar; only failures need a toast.
+    if (s.failed.length > 0) {
+      const ok = fill(d.hq.fetchedOk, { n: s.succeeded });
+      setToast({ msg: `${ok} · ${fill(d.hq.fetchedFailed, { n: s.failed.length })}`, kind: "error" });
+    }
   }
 
   const removeTarget = app.repos.find((r) => r.path === confirmRemove);
@@ -176,14 +174,16 @@ export function Hq({ onOpenDetails }: { onOpenDetails: (path: string) => void })
             <button className="primary" onClick={addRepository} disabled={busy}>
               {d.hq.addRepository}
             </button>
-            <button onClick={fetchAll} disabled={busy || operationActive}>
-              {busy || operationActive ? <span className="spin" /> : fill("{a} ({n})", { a: d.common.fetchAll, n: app.repos.length })}
+            {/* The label always keeps its width; the spinner overlays it. */}
+            <button className="keeps-width" onClick={fetchAll} disabled={busy || operationActive}>
+              <span className={busy || operationActive ? "label-hidden" : undefined}>
+                {fill("{a} ({n})", { a: d.common.fetchAll, n: app.repos.length })}
+              </span>
+              {(busy || operationActive) && <span className="spin" aria-hidden="true" />}
             </button>
           </div>
         </div>
       </header>
-
-      {app.activity && <ActivityStrip activity={app.activity} d={d} p={p} />}
 
       {visible.length === 0 && <p className="muted hq-none">{d.hq.subtitle}</p>}
 

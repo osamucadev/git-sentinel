@@ -7,6 +7,7 @@ import { RepositoryDetails } from "./screens/RepositoryDetails";
 import { Settings } from "./screens/Settings";
 import { About } from "./screens/About";
 import { BootSplash } from "./components/BootSplash";
+import { StatusBar } from "./components/StatusBar";
 import "./personality/themes.css";
 
 type BaseView = { name: "hq" } | { name: "details"; path: string };
@@ -41,7 +42,7 @@ function Shell() {
   }
 
   return (
-    <div className="app-shell">
+    <div className="app-shell with-status-bar">
       <header className="topbar">
         <div className="brand" onClick={() => setView({ name: "hq" })} style={{ cursor: "pointer" }}>
           <span className="brand-mark" aria-hidden="true">◆</span>
@@ -69,6 +70,8 @@ function Shell() {
       )}
       {view.name === "about" && <About onBack={() => setView(view.returnTo)} />}
       {view.name === "settings" && <Settings onBack={() => setView(view.returnTo)} />}
+
+      <StatusBar onOpenRepository={(path) => setView({ name: "details", path })} />
     </div>
   );
 }

@@ -6,6 +6,14 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Added
+
+- A status bar fixed to the bottom of the window, on every screen. While nothing runs it rotates through fleet insights read from local state: unavailable repositories, branches behind their upstream, commits waiting to be pushed, repositories never or long not fetched through Sentinel, uncommitted changes, the oldest stash, the most recent and the quietest repository by latest commit, and overall statistics. Insights naming one repository open it on click. Rotation is slow, pauses under the pointer or keyboard focus, and can be stepped manually. Insights are facts, never alerts, and never claim who authored a commit.
+
+### Changed
+
+- Operation progress (Fetch, Fetch all, Automatic Fetch, Push, Refresh) moved from a strip inside Headquarters to the status bar. The strip entered and left the page flow and changed height mid-operation, shifting the repository list; the bar has a constant height, so nothing above it moves. A successful Fetch all no longer also raises a toast, since the bar already reports it, and the Fetch all button keeps its width while its spinner shows.
+
 ## [0.3.1] - 2026-09-30
 
 ### Changed

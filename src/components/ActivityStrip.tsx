@@ -24,11 +24,14 @@ export function ActivityStrip({ activity, d, p }: { activity: Activity; d: Dict;
     : name ? fill(d.activity.current, { name }) : undefined;
   const percent = activity.total ? Math.round((activity.completed / activity.total) * 100) : 0;
 
+  // One fixed-height line inside the status bar: the detail always has a slot,
+  // so neither it appearing nor disappearing ever changes the layout.
   return (
-    <section className="activity-strip" data-kind={activity.kind} data-phase={activity.phase} aria-live="polite">
-      <div className="activity-strip-main"><strong>{operationTitle(activity, p, d)}</strong><span>{summary}</span></div>
+    <div className="status-activity" data-kind={activity.kind} data-phase={activity.phase} aria-live="polite">
+      <strong>{operationTitle(activity, p, d)}</strong>
       <div className="activity-progress" aria-label={summary}><i style={{ width: `${percent}%` }} /></div>
-      {detail && <div className="activity-strip-detail">{detail}</div>}
-    </section>
+      <span className="status-activity-summary">{summary}</span>
+      <span className="status-activity-detail" title={detail}>{detail}</span>
+    </div>
   );
 }
